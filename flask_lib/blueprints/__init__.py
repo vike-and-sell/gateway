@@ -5,6 +5,8 @@ from .rating import rating_bp
 from .review import review_bp
 from .search import search_bp
 from .recomendations import recomendations_bp
+from .chats import chats_bp
+from .messages import messages_bp
 
 def init_app(app):
     app.register_blueprint(auth_bp)
@@ -14,3 +16,5 @@ def init_app(app):
     app.register_blueprint(review_bp, url_prefix='/review')
     app.register_blueprint(search_bp, url_prefix='/search')
     app.register_blueprint(recomendations_bp, url_prefix='/recomendations')
+    app.register_blueprint(chats_bp, url_prefix='/chats')
+    app.register_blueprint(messages_bp, url_prefix='/messages')
