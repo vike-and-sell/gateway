@@ -4,6 +4,7 @@ from .listings import listings_bp
 from .rating import rating_bp
 from .review import review_bp
 from .search import search_bp
+from .recomendations import recomendations_bp
 
 def init_app(app):
     app.register_blueprint(auth_bp)
@@ -12,3 +13,4 @@ def init_app(app):
     app.register_blueprint(rating_bp, url_prefix='/rating')
     app.register_blueprint(review_bp, url_prefix='/review')
     app.register_blueprint(search_bp, url_prefix='/search')
+    app.register_blueprint(recomendations_bp, url_prefix='/recomendations')
