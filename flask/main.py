@@ -7,9 +7,5 @@ CORS(app)  # This will enable CORS for all routes
 
 init_app(app)
 
-@app.route('/')
-def home():
-    return jsonify(message="Hello, World!")
-
 if __name__ == '__main__':
     app.run(debug=True)
