@@ -1,8 +1,12 @@
 from .auth import auth_bp
 from .users import users_bp
 from .listings import listings_bp
+from .rating import rating_bp
+from .review import review_bp
 
 def init_app(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp, url_prefix='/users')
     app.register_blueprint(listings_bp, url_prefix='/listings')
+    app.register_blueprint(rating_bp, url_prefix='/rating')
+    app.register_blueprint(review_bp, url_prefix='/review')

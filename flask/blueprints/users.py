@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify
 
 users_bp = Blueprint('user', __name__)
 
-
 @users_bp.patch('/<int:user_id>')
 def patch_user(user_id):
     return {}
