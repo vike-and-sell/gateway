@@ -1,6 +1,7 @@
 import { RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import {
+  AllowedMethods,
   CachePolicy,
   Distribution,
   ResponseHeadersPolicy,
@@ -105,6 +106,7 @@ export class GatewayStack extends Stack {
         cachePolicy: CachePolicy.CACHING_DISABLED,
         responseHeadersPolicy:
           ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+        allowedMethods: AllowedMethods.ALLOW_ALL,
       },
     });
   }
