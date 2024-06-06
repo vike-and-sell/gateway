@@ -1,4 +1,4 @@
-
+import gateway
 
 def handler(event, context):
     return {

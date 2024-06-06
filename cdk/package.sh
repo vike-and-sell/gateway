@@ -1,0 +1,1 @@
+zip -j -r asset.zip ../gateway.py ../lambda/*

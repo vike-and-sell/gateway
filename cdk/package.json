@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "cdk": "cdk"
+    "deploy": "sh package.sh && cdk deploy"
   },
   "devDependencies": {
     "@types/node": "20.12.7",
