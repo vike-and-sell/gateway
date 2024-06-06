@@ -8,7 +8,7 @@ To run locally:
 
 ```
 cd gateway
-docker build --tag "tag-name" .
+docker build --tag "tag-name" -f flask/Dockerfile .
 docker run --detach -p 8080:8080 tag-name
 ```
 

@@ -1,4 +1,4 @@
-import resources.logic as logic
+import gateway
 
 from flask import Flask
 
