@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+import gateway
 
 rating_bp = Blueprint('rating', __name__)
 

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+import gateway
 
 search_bp = Blueprint('search', __name__)
 

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+import gateway
 
 auth_bp = Blueprint('auth', __name__)
 

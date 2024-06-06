@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+import gateway
 
 listings_bp = Blueprint('listings', __name__)
 

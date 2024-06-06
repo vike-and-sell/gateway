@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+import gateway
 
 review_bp = Blueprint('review', __name__)
 
