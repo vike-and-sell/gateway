@@ -1,6 +1,7 @@
+
 import gateway
 
-# PATH: GET /users/{userId}/searches
+# PATH: GET /listings?minPrice=...&maxPrice=...&status=...&sortBy=...&isDescending=...
 
 def handler(event, context):
     return {
