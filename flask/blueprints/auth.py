@@ -1,24 +1,29 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, Response
 import gateway
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.post('/request_account')
 def request_account():
-    return {}
+    result = gateway.not_implemented()
+    return Response(result["body"], status=result["statusCode"], mimetype="application/json")
 
 @auth_bp.post('/verify_account')
 def verify_account():
-    return {} 
+    result = gateway.not_implemented()
+    return Response(result["body"], status=result["statusCode"], mimetype="application/json")
 
 @auth_bp.post('/login')
 def login():
-    return {} 
+    result = gateway.not_implemented()
+    return Response(result["body"], status=result["statusCode"], mimetype="application/json") 
 
 @auth_bp.post('/request_reset')
 def request_reset():
-    return {} 
+    result = gateway.not_implemented()
+    return Response(result["body"], status=result["statusCode"], mimetype="application/json") 
 
 @auth_bp.post('/verify_reset')
 def verify_reset():
-    return {} 
+    result = gateway.not_implemented()
+    return Response(result["body"], status=result["statusCode"], mimetype="application/json") 

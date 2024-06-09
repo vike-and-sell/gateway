@@ -1,3 +1,4 @@
 waitress==3.0.0
 flask==3.0.3
 flask-CORS
+urllib3
