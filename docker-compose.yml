@@ -1,0 +1,10 @@
+services:
+  gateway:
+    image: gateway
+    restart: always
+    environment:
+      DATA_URL: "datalayer:8089"
+      DATA_API_KEY: "apikey123"
+      JWT_SECRET_KEY: "secret123"
+    ports:
+      - 8080:8080
