@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mkdir -p build
+cp -r tests/* build
+cp gateway.py build
+cd build
+DATA_URL="test" DATA_API_KEY="testapikey" JWT_SECRET_KEY="testjwtsecret" pytest
