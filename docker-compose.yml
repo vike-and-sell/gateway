@@ -1,6 +1,8 @@
 services:
   gateway:
-    image: gateway
+    networks: 
+      - vas
+    build: .
     restart: always
     environment:
       DATA_URL: "datalayer:8089"
@@ -8,3 +10,8 @@ services:
       JWT_SECRET_KEY: "secret123"
     ports:
       - 8080:8080
+
+networks:
+  vas:
+    name: vikeandsell
+    external: true
