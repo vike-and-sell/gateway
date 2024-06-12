@@ -7,9 +7,8 @@ Owned by the backend team, this repo holds the code, infra, and deployment for t
 To run locally:
 
 ```
-cd gateway
-docker build --tag "tag-name" .
-docker run --detach -p 8080:8080 tag-name
+docker network create vikeandsell # you only need to do this once per device
+docker compose up --build
 ```
 
 TODO: add envars for data layer url and JWT secret key
