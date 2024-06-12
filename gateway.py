@@ -12,7 +12,8 @@ JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 
 def resolve_credentials(auth_token: str):
     try:
-        return jwt.decode(auth_token, JWT_SECRET, algorithms="HS256")
+        result: dict = jwt.decode(auth_token, JWT_SECRET, algorithms="HS256")
+        return result.get("uid")
     except Exception:
         return None
 
@@ -74,7 +75,6 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
     result = execute_data_get(http, f"/get_user?userId={user_id}")
     if result.status == 200:
         try:
-            print(result.data)
             return make_ok_response(result.json())
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
