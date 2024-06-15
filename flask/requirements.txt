@@ -1,5 +1,6 @@
-waitress==3.0.0
-flask==3.0.3
+waitress
+flask
 flask-CORS
 urllib3
 pyjwt
+pyap
