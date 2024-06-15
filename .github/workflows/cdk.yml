@@ -10,6 +10,8 @@ jobs:
         with:
           node-version: "21"
       - name: Install dependencies
+        working-directory: cdk
         run: npm install
       - name: Synth stack
+        working-directory: cdk
         run: npx cdk synth
