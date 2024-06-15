@@ -1,6 +1,6 @@
 waitress
 flask
 flask-CORS
-urllib3
 pyjwt
 pyap
+urllib3

@@ -1,4 +1,4 @@
-import { RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { Stack, StackProps } from "aws-cdk-lib";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import {
   AllowedMethods,
@@ -7,12 +7,21 @@ import {
   ResponseHeadersPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
 import { RestApiOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
+import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
 
 export class GatewayStack extends Stack {
+  readonly layer: LayerVersion;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
+      layerVersionName: "gateway-python-layer",
+      entry: "packaging/layer",
+      compatibleRuntimes: [Runtime.PYTHON_3_12],
+    });
 
     const api = new RestApi(this, "GatewayRestApi", {
       deploy: true,
@@ -116,6 +125,7 @@ export class GatewayStack extends Stack {
       runtime: Runtime.PYTHON_3_12,
       code: Code.fromAsset(`packaging/${handlerName}.zip`),
       handler: `${handlerName}.handler`,
+      layers: [this.layer],
     });
 
     return new LambdaIntegration(func);
