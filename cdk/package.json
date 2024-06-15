@@ -10,13 +10,14 @@
     "deploy": "sh package.sh && cdk deploy"
   },
   "devDependencies": {
+    "@aws-cdk/aws-lambda-python-alpha": "^2.146.0-alpha.0",
     "@types/node": "20.12.7",
     "aws-cdk": "2.142.1",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.142.1",
+    "aws-cdk-lib": "2.146.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
