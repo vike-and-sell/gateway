@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
+    "synth": "sh package.sh && cdk synth",
     "deploy": "sh package.sh && cdk deploy"
   },
   "devDependencies": {
