@@ -1,11 +1,12 @@
 import os
 import json
+import datetime
+
+import jwt
 import jwt.exceptions
 import jwt.utils
-import urllib3
-import jwt
 import pyap
-import datetime
+import urllib3
 
 DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
