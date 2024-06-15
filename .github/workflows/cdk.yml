@@ -1,0 +1,15 @@
+name: AWS CDK synth
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "21"
+      - name: Install dependencies
+        run: npm install
+      - name: Synth stack
+        run: npx cdk synth
