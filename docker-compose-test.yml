@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: tests/Dockerfile
-    restart: no
     environment:
       DATA_URL: test
       DATA_API_KEY: testapikey
