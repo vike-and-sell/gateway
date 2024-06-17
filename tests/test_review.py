@@ -74,3 +74,23 @@ def test_get_reviews_listing_not_found(setup_module):
 
     actual = gateway.get_reviews_by_listing_id(http, token, 5678)
     assert expected == actual
+
+def test_post_review_success(setup_module):
+    http, token = setup_module
+
+    response = mock({
+        "status": 200
+    })
+    when(http).request("POST", "http://test/create_review", body={
+        "listingId": 5678,
+        "review": "Ok, now this is awesome!"
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+
+    expected = {
+        "statusCode": 200
+    }
+
+    actual = gateway.post_review_by_listing_id(http, token, 5678, "Ok, now this is awesome!")
+    assert expected == actual

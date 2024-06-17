@@ -188,6 +188,16 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
 
     return make_internal_error_response()
 
+def post_review_by_listing_id(http, auth_token, listing_id, review):
+    result = execute_data_post(http, f"/create_review", {
+        "listingId": listing_id,
+        "review": review
+    })
+
+    if result.status == 200:
+        return make_ok_response()
+    
+
 def not_implemented():
     return {
         "statusCode": 501,
