@@ -109,3 +109,28 @@ def test_post_rating_success(setup_module):
     }
     actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual
+
+def test_post_listing_not_found(setup_module):
+    http, token = setup_module
+    listing_id = 5678
+    rating = 5
+
+    response = mock({
+        "status": 404,
+    })
+
+    when(http).request("POST", "http://test/create_rating", body={
+        "listingId": listing_id,
+        "rating": rating
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "Listing not found"
+        })
+    }
+    actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
+    assert expected == actual
