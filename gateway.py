@@ -164,6 +164,27 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
+def get_ratings_by_listing_id(http, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    # if not creds or creds != listing_id:
+    #     return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_ratings?listingId={listing_id}")
+
+    if result.status == 200:
+        data = result.json()
+        # print(data)
+        body = []
+        for object in data:
+            body.append({
+                "username": object["username"],
+                "created_on": object["created_on"].strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "rating": object["rating"]
+            })
+        return make_ok_response(body=body)
+
+    return make_internal_error_response()
+
 
 def not_implemented():
     return {
