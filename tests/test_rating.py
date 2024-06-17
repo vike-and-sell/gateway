@@ -15,8 +15,8 @@ def setup_module():
     })
     return http, token
 
-def test_get_ratings_success():
-    http = mock(urllib3.PoolManager())
+def test_get_ratings_success(setup_module):
+    http, token = setup_module
 
     response = mock({
         "status": 200,
@@ -37,9 +37,6 @@ def test_get_ratings_success():
     when(http).request("GET", "http://test/get_ratings?listingId=5678", body=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
-    token = sign_jwt_for_test({
-        "uid": 1234
-    })
 
     expected = {
         "statusCode": 200,
@@ -79,8 +76,8 @@ def test_get_ratings_does_not_exist(setup_module):
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
     assert expected == actual
 
-def test_get_ratings_unauthorized():
-    http = mock(urllib3.PoolManager())
+def test_get_ratings_unauthorized(setup_module):
+    http, _ = setup_module
 
     expected = {
         "statusCode": 401,
@@ -89,4 +86,26 @@ def test_get_ratings_unauthorized():
     assert expected == actual
 
     actual = gateway.get_ratings_by_listing_id(http, sign_jwt_for_test({}), 5678)
+    assert expected == actual
+
+def test_post_rating_success(setup_module):
+    http, token = setup_module
+    listing_id = 5678
+    rating = 5
+
+    response = mock({
+        "status": 200,
+    })
+
+    when(http).request("POST", "http://test/create_rating", body={
+        "listingId": listing_id,
+        "rating": rating
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+
+    expected = {
+        "statusCode": 200,
+    }
+    actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual

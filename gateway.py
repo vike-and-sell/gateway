@@ -173,7 +173,6 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
 
     if result.status == 200:
         data = result.json()
-        # print(data)
         body = []
         for object in data:
             body.append({
@@ -187,6 +186,22 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
 
     return make_internal_error_response()
 
+def post_rating_by_listing_id(http, auth_token, listing_id, rating):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_post(http, f"/create_rating", {
+        "listingId": listing_id,
+        "rating": rating
+    })
+
+    if result.status == 200:
+        return make_ok_response()
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
 
 def not_implemented():
     return {
