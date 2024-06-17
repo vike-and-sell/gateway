@@ -75,6 +75,21 @@ def test_get_reviews_listing_not_found(setup_module):
     actual = gateway.get_reviews_by_listing_id(http, token, 5678)
     assert expected == actual
 
+def test_get_reviews_invalid_type(setup_module):
+    http, token = setup_module
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid arg types"
+        })
+    }
+
+    actual = gateway.get_reviews_by_listing_id(http, token, "not number")
+    assert expected == actual
+    actual = gateway.get_reviews_by_listing_id(http, token, [1, 2, 3, 4])
+    assert expected == actual
+
 def test_post_review_success(setup_module):
     http, token = setup_module
 
@@ -106,4 +121,19 @@ def test_post_review_unauthorized(setup_module):
     assert expected == actual
 
     actual = gateway.post_review_by_listing_id(http, sign_jwt_for_test({}), 5678, "Terrible.")
+    assert expected == actual
+
+def test_post_review_invalid_type(setup_module):
+    http, token = setup_module
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid arg types"
+        })
+    }
+
+    actual = gateway.post_review_by_listing_id(http, token, "text", "Terrible.")
+    assert expected == actual
+    actual = gateway.post_review_by_listing_id(http, token, 5678, {"generic":1234})
     assert expected == actual

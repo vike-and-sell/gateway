@@ -170,6 +170,8 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
 
     if not creds:
         return make_unauthorized_response()
+    if not isinstance(listing_id, int):
+        return make_invalid_request_response("Invalid arg types")
 
     result = execute_data_get(http, f"/get_reviews?listingId={listing_id}")
 
@@ -193,6 +195,8 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
 
     if not creds:
         return make_unauthorized_response()
+    if not isinstance(listing_id, int) or not isinstance(review, str):
+        return make_invalid_request_response("Invalid arg types")
 
     result = execute_data_post(http, f"/create_review", {
         "listingId": listing_id,
