@@ -168,6 +168,8 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+    if not isinstance(listing_id, int):
+        return make_invalid_request_response("Invalid arg types")
 
     result = execute_data_get(http, f"/get_ratings?listingId={listing_id}")
 
@@ -190,7 +192,9 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    if rating not in [1, 2, 3, 4, 5]:
+    if not isinstance(listing_id, int) or not isinstance(rating, int):
+        return make_invalid_request_response("Invalid arg types")
+    if rating < 1 or rating > 5:
         return make_invalid_request_response("Rating should be between 1 and 5")
 
     result = execute_data_post(http, f"/create_rating", {

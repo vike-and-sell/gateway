@@ -88,6 +88,21 @@ def test_get_ratings_unauthorized(setup_module):
     actual = gateway.get_ratings_by_listing_id(http, sign_jwt_for_test({}), 5678)
     assert expected == actual
 
+def test_get_ratings_invalid_type(setup_module):
+    http, token = setup_module
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid arg types"
+        })
+    }
+
+    actual = gateway.get_ratings_by_listing_id(http, token, "not number")
+    assert expected == actual
+    actual = gateway.get_ratings_by_listing_id(http, token, [1, 2, 3, 4])
+    assert expected == actual
+
 def test_post_rating_success(setup_module):
     http, token = setup_module
     listing_id = 5678
@@ -147,4 +162,19 @@ def test_post_listing_illegal_rating(setup_module):
     actual = gateway.post_rating_by_listing_id(http, token, 5678, 0)
     assert expected == actual
     actual = gateway.post_rating_by_listing_id(http, token, 5678, 6)
+    assert expected == actual
+
+def test_get_ratings_invalid_type(setup_module):
+    http, token = setup_module
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid arg types"
+        })
+    }
+
+    actual = gateway.post_rating_by_listing_id(http, token, 12, 6.5)
+    assert expected == actual
+    actual = gateway.post_rating_by_listing_id(http, token, [1, 2, 3, 4], 2)
     assert expected == actual
