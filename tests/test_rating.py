@@ -7,15 +7,7 @@ from test_utils import sign_jwt_for_test, DATA_API_KEY
 
 import gateway
 
-@pytest.fixture(scope='module', autouse=True)
-def setup_module():
-    http = mock(urllib3.PoolManager())
-    token = sign_jwt_for_test({
-        "uid": 1234
-    })
-    return http, token
-
-def test_get_ratings_success(setup_module):
+def test_get_ratings_success():
     http = mock(urllib3.PoolManager())
 
     response = mock({
@@ -57,4 +49,16 @@ def test_get_ratings_success(setup_module):
         ])
     }
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
+    assert expected == actual
+
+def test_get_ratings_unauthorized():
+    http = mock(urllib3.PoolManager())
+
+    expected = {
+        "statusCode": 401,
+    }
+    actual = gateway.get_ratings_by_listing_id(http, None, 5678)
+    assert expected == actual
+
+    actual = gateway.get_ratings_by_listing_id(http, sign_jwt_for_test({}), 5678)
     assert expected == actual
