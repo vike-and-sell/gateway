@@ -94,3 +94,16 @@ def test_post_review_success(setup_module):
 
     actual = gateway.post_review_by_listing_id(http, token, 5678, "Ok, now this is awesome!")
     assert expected == actual
+
+def test_post_review_unauthorized(setup_module):
+    http, _ = setup_module
+
+    expected = {
+        "statusCode": 401,
+    }
+    actual = gateway.post_review_by_listing_id(http, None, 5678, "Terrible.")
+    
+    assert expected == actual
+
+    actual = gateway.post_review_by_listing_id(http, sign_jwt_for_test({}), 5678, "Terrible.")
+    assert expected == actual

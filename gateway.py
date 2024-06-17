@@ -189,6 +189,11 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
     return make_internal_error_response()
 
 def post_review_by_listing_id(http, auth_token, listing_id, review):
+    creds = resolve_credentials(auth_token)
+
+    if not creds:
+        return make_unauthorized_response()
+
     result = execute_data_post(http, f"/create_review", {
         "listingId": listing_id,
         "review": review
