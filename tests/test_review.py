@@ -33,7 +33,6 @@ def test_get_reviews_success(setup_module):
         "review": "... this item totally sucks :("
         },
     ])
-
     when(http).request("GET", "http://test/get_reviews?listingId=5678", body=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -53,5 +52,25 @@ def test_get_reviews_success(setup_module):
             },
         ])
     }
+    actual = gateway.get_reviews_by_listing_id(http, token, 5678)
+    assert expected == actual
+
+def test_get_reviews_listing_not_found(setup_module):
+    http, token = setup_module
+
+    response = mock({
+        "status": 404,
+    })
+    when(http).request("GET", "http://test/get_reviews?listingId=5678", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "Listing not found"
+        })
+    }
+
     actual = gateway.get_reviews_by_listing_id(http, token, 5678)
     assert expected == actual

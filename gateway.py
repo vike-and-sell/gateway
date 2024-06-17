@@ -168,6 +168,9 @@ def get_search_history_by_id(http, auth_token, user_id):
 def get_reviews_by_listing_id(http, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
 
+    if not creds:
+        return make_unauthorized_response()
+
     result = execute_data_get(http, f"/get_reviews?listingId={listing_id}")
 
     if result.status == 200:
@@ -180,6 +183,8 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
                 "review": object["review"]
             })
         return make_ok_response(body=body)
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
 
