@@ -182,6 +182,8 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
                 "rating": object["rating"]
             })
         return make_ok_response(body=body)
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
 

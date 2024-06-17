@@ -7,6 +7,14 @@ from test_utils import sign_jwt_for_test, DATA_API_KEY
 
 import gateway
 
+@pytest.fixture(scope='module', autouse=True)
+def setup_module():
+    http = mock(urllib3.PoolManager())
+    token = sign_jwt_for_test({
+        "uid": 1234
+    })
+    return http, token
+
 def test_get_ratings_success():
     http = mock(urllib3.PoolManager())
 
@@ -48,6 +56,26 @@ def test_get_ratings_success():
             },
         ])
     }
+    actual = gateway.get_ratings_by_listing_id(http, token, 5678)
+    assert expected == actual
+
+def test_get_ratings_does_not_exist(setup_module):
+    http, token = setup_module
+
+    response = mock({
+        "status": 404,
+    })
+    when(http).request("GET", "http://test/get_ratings?listingId=5678", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "Listing not found"
+        })
+    }
+    
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
     assert expected == actual
 
