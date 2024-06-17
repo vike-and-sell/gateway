@@ -134,3 +134,17 @@ def test_post_listing_not_found(setup_module):
     }
     actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual
+
+def test_post_listing_illegal_rating(setup_module):
+    http, token = setup_module
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Rating should be between 1 and 5"
+        })
+    }
+    actual = gateway.post_rating_by_listing_id(http, token, 5678, 0)
+    assert expected == actual
+    actual = gateway.post_rating_by_listing_id(http, token, 5678, 6)
+    assert expected == actual
