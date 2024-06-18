@@ -32,10 +32,10 @@ def make_ok_response(body=None, headers: dict = None):
         "statusCode": 200,
     }
 
-    if headers:
+    if headers is not None:
         result["headers"] = headers,
 
-    if body:
+    if body is not None:
         result["body"] = json.dumps(body)
 
     return result
@@ -106,7 +106,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             return make_ok_response(body={
                 "username": username,
                 "location": safe_address,
-                "joiningDate": joining_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "joiningDate": joining_date.isoformat(),
                 "itemsSold": [str(x) for x in items_sold],
                 "itemsPurchased": [str(x) for x in items_purchased],
             })
@@ -164,6 +164,113 @@ def get_search_history_by_id(http, auth_token, user_id):
         return make_not_found_response()
 
     return make_internal_error_response()
+
+
+def get_chats(http, auth_token):
+    creds = resolve_credentials(auth_token)
+
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_chats?userId={creds}")
+
+    if result.status == 200:
+        data = result.json()
+        body = [str(x) for x in data["chats"]]
+        return make_ok_response(body)
+    if result.status == 404:
+        return make_ok_response([])
+
+    return make_internal_error_response()
+
+
+def get_messages(http, auth_token, chat_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_messages?chatId={chat_id}")
+
+    if result.status == 200:
+        data = result.json()
+        messages = [{
+            "messageId": str(x["messageId"]),
+            "senderId": str(x["sender"]),
+            "content": str(x["content"]),
+            "timestamp": x["timestamp"].isoformat()
+        } for x in data["messages"]]
+        return make_ok_response({
+            "messages": messages
+        })
+    if result.status == 404:
+        return make_not_found_response("chatId does not exist")
+
+    return make_internal_error_response()
+
+
+def get_chat_preview(http, auth_token, chat_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    chat_info = execute_data_get(http, f"/get_chat_info?chatId={chat_id}")
+    if chat_info.status == 200:
+        # only execute the second query if the first one succeeds to save processing power
+        last_message_result = execute_data_get(
+            http, f"/get_last_message_timestamp?chatId={chat_id}")
+        if last_message_result.status == 200:
+            chat_json = chat_info.json()
+            last_message_json = last_message_result.json()
+            users = [str(chat_json["seller"]), str(chat_json["buyer"])]
+            listing_id = str(chat_json["listingId"])
+            last_message_time = last_message_json["timestamp"].isoformat()
+            return make_ok_response({
+                "users": users,
+                "listingId": listing_id,
+                "lastMessageTime": last_message_time
+            })
+        else:
+            return make_internal_error_response()
+    elif chat_info.status == 404:
+        return make_not_found_response("chatId not found")
+
+    return make_internal_error_response()
+
+
+def write_message(http, auth_token, chat_id, content) -> int:
+    """
+    Does not return an HTTP response as it is sitting behind a
+    WebSocket server. Instead returns an integer of 
+    200, 400, 401, or 500
+    """
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return 401
+
+    chat_info = execute_data_get(http, f"/get_chat_info?chatId={chat_id}")
+    if chat_info.status == 200:
+        data = chat_info.json()
+        seller = data["seller"]
+        buyer = data["buyer"]
+        # first make sure that this account is allowed
+        # to send messages in the chat
+        if creds != seller and creds != buyer:
+            return 401
+
+        result = execute_data_post(http, f"/create_message", {
+            "chatId": chat_id,
+            "content": content,
+            "senderId": creds
+        })
+        if result.status == 200:
+            return 200
+        else:
+            return 500
+
+    elif chat_info.status == 404:
+        return 404
+
+    return 500
 
 
 def not_implemented():

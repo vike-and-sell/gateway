@@ -12,6 +12,10 @@ def sign_jwt_for_test(body) -> str:
     return jwt.encode(body, JWT_SECRET, algorithm="HS256")
 
 
+def wrong_jwt_for_test(body) -> str:
+    return jwt.encode(body, f"{JWT_SECRET}asdf", algorithm="HS256")
+
+
 def test_auth_helper():
     signed = sign_jwt_for_test({
         "uid": 5678
