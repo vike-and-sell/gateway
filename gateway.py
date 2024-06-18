@@ -32,10 +32,10 @@ def make_ok_response(body=None, headers: dict = None):
         "statusCode": 200,
     }
 
-    if headers is not None:
+    if headers:
         result["headers"] = headers,
 
-    if body is not None:
+    if body:
         result["body"] = json.dumps(body)
 
     return result
@@ -116,6 +116,52 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("User not found")
+
+    return make_internal_error_response()
+
+
+def get_user_by_auth_token(http, auth_token):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    return get_user_by_id(http, auth_token, creds)
+
+
+def update_user_by_id(http, auth_token, user_id, address):
+    creds = resolve_credentials(auth_token)
+    if not creds or creds != user_id:
+        return make_unauthorized_response()
+
+    parsed_address = pyap.parse(address, country="CA")
+    if len(parsed_address) == 0:
+        return make_invalid_request_response("Invalid address")
+
+    result = execute_data_post(http, "/update_user", {
+        "userId": user_id,
+        "address": parsed_address[0].full_address,
+    })
+
+    if result.status == 200:
+        return make_ok_response()
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
+
+    return make_internal_error_response()
+
+
+def get_search_history_by_id(http, auth_token, user_id):
+    creds = resolve_credentials(auth_token)
+    if not creds or creds != user_id:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_searches?userId={user_id}")
+
+    if result.status == 200:
+        data = result.json()
+        return make_ok_response(body=data["searches"])
+    elif result.status == 404:
+        return make_not_found_response()
 
     return make_internal_error_response()
 
