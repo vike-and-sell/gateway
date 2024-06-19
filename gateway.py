@@ -165,6 +165,92 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
+def get_ratings_by_listing_id(http, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    if not isinstance(listing_id, int):
+        return make_invalid_request_response("Invalid arg types")
+
+    result = execute_data_get(http, f"/get_ratings?listingId={listing_id}")
+
+    if result.status == 200:
+        data = result.json()
+        body = []
+        for object in data:
+            body.append({
+                "username": object["username"],
+                "created_on": object["created_on"].isoformat(),
+                "rating": object["rating"]
+            })
+        return make_ok_response(body=body)
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+def post_rating_by_listing_id(http, auth_token, listing_id, rating):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    if not isinstance(listing_id, int) or not isinstance(rating, int):
+        return make_invalid_request_response("Invalid arg types")
+    if rating < 1 or rating > 5:
+        return make_invalid_request_response("Rating should be between 1 and 5")
+
+    result = execute_data_post(http, f"/create_rating", {
+        "listingId": listing_id,
+        "rating": rating
+    })
+
+    if result.status == 200:
+        return make_ok_response()
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+def get_reviews_by_listing_id(http, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+
+    if not creds:
+        return make_unauthorized_response()
+    if not isinstance(listing_id, int):
+        return make_invalid_request_response("Invalid arg types")
+
+    result = execute_data_get(http, f"/get_reviews?listingId={listing_id}")
+
+    if result.status == 200:
+        data = result.json()
+        body = []
+        for object in data:
+            body.append({
+                "username": object["username"],
+                "created_on": object["created_on"].isoformat(),
+                "review": object["review"]
+            })
+        return make_ok_response(body=body)
+    if result.status  == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+def post_review_by_listing_id(http, auth_token, listing_id, review):
+    creds = resolve_credentials(auth_token)
+
+    if not creds:
+        return make_unauthorized_response()
+    if not isinstance(listing_id, int) or not isinstance(review, str):
+        return make_invalid_request_response("Invalid arg types")
+
+    result = execute_data_post(http, f"/create_review", {
+        "listingId": listing_id,
+        "review": review
+    })
+
+    if result.status == 200:
+        return make_ok_response()
+    
 
 def get_user_by_auth_token(http, auth_token):
     creds = resolve_credentials(auth_token)
