@@ -35,7 +35,7 @@ def test_get_user_by_id_success_path():
         "body": json.dumps({
             "username": "bob1",
             "location": "V8W",
-            "joiningDate": "2000-01-01T00:00:00Z",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": ["12345", "67890"],
             "itemsPurchased": ["56789", "98765"],
         })
@@ -178,7 +178,7 @@ def test_get_user_by_me_success_path():
         "body": json.dumps({
             "username": "bob1",
             "location": "V8W",
-            "joiningDate": "2000-01-01T00:00:00Z",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": ["12345", "67890"],
             "itemsPurchased": ["56789", "98765"],
         })
