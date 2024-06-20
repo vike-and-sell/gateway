@@ -277,7 +277,9 @@ def test_write_new_message_success_path():
         "uid": 5678
     })
 
-    expected = 200
+    expected = {
+        "statusCode": 200
+    }
     actual = gateway.write_message(http, token, 1234, "Hi there")
     assert expected == actual
 
@@ -288,7 +290,9 @@ def test_write_new_message_invalid_creds():
         "uid": 1234
     })
 
-    expected = 401
+    expected = {
+        "statusCode": 401
+    }
     actual = gateway.write_message(http, token, 1234, "Hi there")
     assert expected == actual
 
@@ -305,7 +309,12 @@ def test_write_new_message_invalid_chat_id():
         "uid": 5678
     })
 
-    expected = 404
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "chatId not found"
+        })
+    }
     actual = gateway.write_message(http, token, 1234, "Hi there! :)")
     assert expected == actual
 
@@ -328,6 +337,8 @@ def test_write_new_message_invalid_sender_id():
         "uid": 5678
     })
 
-    expected = 401
+    expected = {
+        "statusCode": 401
+    }
     actual = gateway.write_message(http, token, 1234, "Hi there")
     assert expected == actual
