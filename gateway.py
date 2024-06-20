@@ -32,10 +32,10 @@ def make_ok_response(body=None, headers: dict = None):
         "statusCode": 200,
     }
 
-    if headers:
+    if headers is not None:
         result["headers"] = headers,
 
-    if body:
+    if body is not None:
         result["body"] = json.dumps(body)
 
     return result
@@ -165,6 +165,7 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
+
 def get_ratings_by_listing_id(http, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
@@ -184,10 +185,11 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
                 "rating": object["rating"]
             })
         return make_ok_response(body=body)
-    if result.status  == 404:
+    if result.status == 404:
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
+
 
 def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     creds = resolve_credentials(auth_token)
@@ -205,10 +207,11 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
 
     if result.status == 200:
         return make_ok_response()
-    if result.status  == 404:
+    if result.status == 404:
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
+
 
 def get_reviews_by_listing_id(http, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
@@ -230,10 +233,11 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
                 "review": object["review"]
             })
         return make_ok_response(body=body)
-    if result.status  == 404:
+    if result.status == 404:
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
+
 
 def post_review_by_listing_id(http, auth_token, listing_id, review):
     creds = resolve_credentials(auth_token)
@@ -250,7 +254,7 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
 
     if result.status == 200:
         return make_ok_response()
-    
+
 
 def get_user_by_auth_token(http, auth_token):
     creds = resolve_credentials(auth_token)
