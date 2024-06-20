@@ -6,6 +6,7 @@ import gateway
 DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
+MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 
 
 def sign_jwt_for_test(body) -> str:

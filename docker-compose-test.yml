@@ -8,3 +8,4 @@ services:
       DATA_URL: test
       DATA_API_KEY: testapikey
       JWT_SECRET_KEY: testjwtsecret
+      MAPS_API_KEY: testmapsapikey
