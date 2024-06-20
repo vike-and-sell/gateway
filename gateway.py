@@ -219,14 +219,6 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
         return make_ok_response()
 
 
-def get_user_by_auth_token(http, auth_token):
-    creds = resolve_credentials(auth_token)
-    if not creds:
-        return make_unauthorized_response()
-
-    return get_user_by_id(http, auth_token, creds)
-
-
 def update_user_by_id(http, auth_token, user_id, address):
     creds = resolve_credentials(auth_token)
     if not creds or creds != user_id:
@@ -250,7 +242,6 @@ def update_user_by_id(http, auth_token, user_id, address):
         lat = pos["lat"]
         lng = pos["lon"]
     else:
-        # TODO: what to do if the address is not geocodeable?
         return make_internal_error_response()
 
     result = execute_data_post(http, "/update_user", {
