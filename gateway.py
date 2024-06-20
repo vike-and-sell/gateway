@@ -11,6 +11,7 @@ import urllib3
 DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
+MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 
 
 def address_to_postal_code(address):
@@ -128,44 +129,6 @@ def get_user_by_auth_token(http, auth_token):
     return get_user_by_id(http, auth_token, creds)
 
 
-def update_user_by_id(http, auth_token, user_id, address):
-    creds = resolve_credentials(auth_token)
-    if not creds or creds != user_id:
-        return make_unauthorized_response()
-
-    parsed_address = pyap.parse(address, country="CA")
-    if len(parsed_address) == 0:
-        return make_invalid_request_response("Invalid address")
-
-    result = execute_data_post(http, "/update_user", {
-        "userId": user_id,
-        "address": parsed_address[0].full_address,
-    })
-
-    if result.status == 200:
-        return make_ok_response()
-    elif result.status == 400:
-        return make_invalid_request_response("Invalid request")
-
-    return make_internal_error_response()
-
-
-def get_search_history_by_id(http, auth_token, user_id):
-    creds = resolve_credentials(auth_token)
-    if not creds or creds != user_id:
-        return make_unauthorized_response()
-
-    result = execute_data_get(http, f"/get_searches?userId={user_id}")
-
-    if result.status == 200:
-        data = result.json()
-        return make_ok_response(body=data["searches"])
-    elif result.status == 404:
-        return make_not_found_response()
-
-    return make_internal_error_response()
-
-
 def get_ratings_by_listing_id(http, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
@@ -273,9 +236,30 @@ def update_user_by_id(http, auth_token, user_id, address):
     if len(parsed_address) == 0:
         return make_invalid_request_response("Invalid address")
 
+    full_address = parsed_address[0].full_address
+    lat = None
+    lng = None
+
+    geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                               .format(MAPS_API_KEY, full_address))
+
+    print(geocode_raw)
+    if geocode_raw.status == 200:
+        geocode = geocode_raw.json()
+        pos = geocode["results"][0]["position"]
+        lat = pos["lat"]
+        lng = pos["lon"]
+    else:
+        # TODO: what to do if the address is not geocodeable?
+        return make_internal_error_response()
+
     result = execute_data_post(http, "/update_user", {
         "userId": user_id,
         "address": parsed_address[0].full_address,
+        "location": {
+            "lat": lat,
+            "lng": lng,
+        },
     })
 
     if result.status == 200:
