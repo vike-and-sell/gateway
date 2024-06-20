@@ -374,14 +374,9 @@ def get_chat_preview(http, auth_token, chat_id):
 
 
 def write_message(http, auth_token, chat_id, content) -> int:
-    """
-    Does not return an HTTP response as it is sitting behind a
-    WebSocket server. Instead returns an integer of 
-    200, 400, 401, or 500
-    """
     creds = resolve_credentials(auth_token)
     if not creds:
-        return 401
+        return make_unauthorized_response()
 
     chat_info = execute_data_get(http, f"/get_chat_info?chatId={chat_id}")
     if chat_info.status == 200:
@@ -391,7 +386,7 @@ def write_message(http, auth_token, chat_id, content) -> int:
         # first make sure that this account is allowed
         # to send messages in the chat
         if creds != seller and creds != buyer:
-            return 401
+            return make_unauthorized_response()
 
         result = execute_data_post(http, f"/create_message", {
             "chatId": chat_id,
@@ -399,14 +394,14 @@ def write_message(http, auth_token, chat_id, content) -> int:
             "senderId": creds
         })
         if result.status == 200:
-            return 200
+            return make_ok_response()
         else:
-            return 500
+            return make_internal_error_response()
 
     elif chat_info.status == 404:
-        return 404
+        return make_not_found_response("chatId not found")
 
-    return 500
+    return make_internal_error_response()
 
 
 def not_implemented():
