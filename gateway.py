@@ -165,6 +165,91 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
+def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing?listingId={listing_id}")
+    if result.status == 200:
+        try:
+            data = result.json()
+            sellerId = data["sellerId"]
+            listingId = data["listingId"]
+            title = data["title"]
+            price = data["price"]
+            full_address = data["address"]
+            status = data["status"]
+            listedAt: datetime.datetime = data["listedAt"]
+            lastUpdatedAt: datetime.datetime = data["lastUpdatedAt"]
+
+            safe_address = address_to_postal_code(full_address)
+
+            return make_ok_response(body={
+                "sellerId": sellerId,
+                "listingId": listingId,
+                "title": title,
+                "price": price,
+                "location": safe_address,
+                "status": status,
+                "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            })
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+def get_my__listings(http: urllib3.PoolManager, auth_token):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing/me")
+    if result.status == 200:
+        try:
+            data = result.json()
+
+            listings_list = []
+
+            for listing in data:
+                sellerId = listing["sellerId"]
+                listingId = listing["listingId"]
+                title = listing["title"]
+                price = listing["price"]
+                full_address = listing["address"]
+                safe_address = address_to_postal_code(full_address)
+                status = listing["status"]
+                listedAt: datetime.datetime = listing["listedAt"]
+                lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
+
+                listings_list.append({
+                    "sellerId": sellerId,
+                    "listingId": listingId,
+                    "title": title,
+                    "price": price,
+                    "location": safe_address,
+                    "status": status,
+                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                })
+
+
+
+            return make_ok_response(body=listings_list)
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
 
 def not_implemented():
     return {
