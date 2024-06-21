@@ -6,10 +6,80 @@ import json
 import gateway
 
 def test_create_listing_success():
-    pass
+    listing_data = {        
+        "title": "Chair",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",}
+
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 201,
+    })
+    when(response).json().thenReturn({
+        "listingId": 1234,
+    })
+    when(http).request("POST", "http://test/create_listing", body={
+        "sellerId": 5678,
+        "title": "Chair",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 201,
+        "body": json.dumps({
+            "listingId": 1234,
+        })
+    }
+    actual = gateway.create_listing(http, token, listing_data)
+    assert expected == actual
 
 def test_create_listing_fail():
-    pass
+    http = mock(urllib3.PoolManager())
+
+    response = mock({
+        "status": 400,
+    })
+    
+    when(http).request("POST", "http://test/create_listing", body={
+        "sellerId": 5678,
+        "title": "",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid request"
+        }),
+    }
+
+    actual = gateway.create_listing(http, token, {
+        "title": "",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    })
+    assert expected == actual
 
 def test_patch_listing_success():
     pass
@@ -151,6 +221,13 @@ def test_get_my_listings_success():
     actual = gateway.get_my__listings(http, token)
     assert expected == actual
 
-def test_get_my_listings_fail():
-    pass
+def test_get_my_listings_auth_fail():
+    http = mock(urllib3.PoolManager())
+
+    expected = {
+        "statusCode": 401,
+    }
+
+    actual = gateway.get_my__listings(http, None)
+    assert expected == actual
 

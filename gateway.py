@@ -41,6 +41,20 @@ def make_ok_response(body=None, headers: dict = None):
     return result
 
 
+def make_created_response(body=None, headers: dict = None):
+    result = {
+        "statusCode": 201,
+    }
+
+    if headers:
+        result["headers"] = headers,
+
+    if body:
+        result["body"] = json.dumps(body)
+
+    return result
+
+
 def make_invalid_request_response(message: str = ""):
     return {
         "statusCode": 400,
@@ -238,8 +252,6 @@ def get_my__listings(http: urllib3.PoolManager, auth_token):
                     "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
                 })
 
-
-
             return make_ok_response(body=listings_list)
         
         except json.decoder.JSONDecodeError:
@@ -250,6 +262,35 @@ def get_my__listings(http: urllib3.PoolManager, auth_token):
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
+
+def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_post(http, f"/create_listing", {
+        "sellerId": creds,
+        "title": listing_data["title"],
+        "price": listing_data["price"],
+        "location": listing_data["location"],
+        "address": listing_data["address"],
+        "status": listing_data["status"],    
+    })
+    if result.status == 201:
+        try:
+            data = result.json()
+            return make_created_response(body={
+                "listingId": data["listingId"],
+            })
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
+
+
 
 def not_implemented():
     return {
