@@ -1,17 +1,34 @@
 import os
 import json
 import datetime
+import re
 
 import jwt
 import jwt.exceptions
 import jwt.utils
 import pyap
 import urllib3
+import hashlib
 
 DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
+
+
+def address_to_latlng(http, address):
+    geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                               .format(MAPS_API_KEY, address))
+
+    print(geocode_raw)
+    if geocode_raw.status == 200:
+        geocode = geocode_raw.json()
+        pos = geocode["results"][0]["position"]
+        lat = pos["lat"]
+        lng = pos["lon"]
+        return (lat, lng)
+
+    return None
 
 
 def address_to_postal_code(address):
@@ -247,20 +264,12 @@ def update_user_by_id(http, auth_token, user_id, address):
         return make_invalid_request_response("Invalid address")
 
     full_address = parsed_address[0].full_address
-    lat = None
-    lng = None
 
-    geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
-                               .format(MAPS_API_KEY, full_address))
-
-    print(geocode_raw)
-    if geocode_raw.status == 200:
-        geocode = geocode_raw.json()
-        pos = geocode["results"][0]["position"]
-        lat = pos["lat"]
-        lng = pos["lon"]
-    else:
+    geocode_result = address_to_latlng(http, full_address)
+    if geocode_result is None:
         return make_internal_error_response()
+
+    lat, lng = geocode_result
 
     result = execute_data_post(http, "/update_user", {
         "userId": user_id,
@@ -595,6 +604,75 @@ def write_message(http, auth_token, chat_id, content) -> int:
         return make_not_found_response("chatId not found")
 
     return make_internal_error_response()
+
+
+def request_account(email, callback):
+    if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+        return make_invalid_request_response()
+
+    encoded = jwt.encode({
+        "eml": email,
+        "exp": (datetime.datetime.now() + datetime.timedelta(days=1)).isoformat()
+    }, JWT_SECRET, algorithm="HS256")
+    print("CREATE ACCOUNT REQUEST:")
+    print(f"\t{callback}{encoded}")
+
+
+def verify_account(http, token, username, password, address):
+    try:
+        decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        email = decoded["eml"]
+        if not re.match("^[a-zA-Z0-9_@]{6,20}$", username):
+            return make_invalid_request_response()
+        if not re.match("^[^@]+@uvic\.ca$", email):
+            return make_invalid_request_response()
+        if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
+            return make_invalid_request_response()
+
+        salt = hashlib.sha256(username.encode("ascii"),
+                              usedforsecurity=True).hexdigest()
+        first_pass = hashlib.sha256(password.encode(
+            "ascii"), usedforsecurity=True).hexdigest()
+        together = f"{first_pass}{salt}"
+        second_pass = hashlib.sha256(
+            together.encode("ascii"), usedforsecurity=True).hexdigest()
+        parsed_address = pyap.parse(address, country="CA")
+
+        if len(parsed_address) == 0:
+            return make_invalid_request_response("Invalid address")
+
+        full_address = parsed_address[0].full_address
+
+        geocode_result = address_to_latlng(http, full_address)
+        if geocode_result is None:
+            return make_internal_error_response()
+
+        lat, lng = geocode_result
+        execute_data_post(http, "/make_user", body={
+            "email": email,
+            "username": username,
+            "password": second_pass,
+            "address": full_address,
+            "location": {
+                "lat": lat,
+                "lng": lng
+            }
+        })
+    except Exception as e:
+        print("decoding failed")
+        print(e)
+
+
+def request_reset():
+    pass
+
+
+def verify_reset():
+    pass
+
+
+def login():
+    pass
 
 
 def not_implemented():
