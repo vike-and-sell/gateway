@@ -398,6 +398,7 @@ def request_account(email, callback):
     }, JWT_SECRET, algorithm="HS256")
     print("CREATE ACCOUNT REQUEST:")
     print(f"\t{callback}{encoded}")
+    # TODO: send email
 
 
 def verify_account(http, token, username, password, address):
@@ -413,11 +414,9 @@ def verify_account(http, token, username, password, address):
 
         salt = hashlib.sha256(username.encode("ascii"),
                               usedforsecurity=True).hexdigest()
-        first_pass = hashlib.sha256(password.encode(
-            "ascii"), usedforsecurity=True).hexdigest()
-        together = f"{first_pass}{salt}"
-        second_pass = hashlib.sha256(
-            together.encode("ascii"), usedforsecurity=True).hexdigest()
+        hashed_password = hashlib.sha256(
+            f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
+
         parsed_address = pyap.parse(address, country="CA")
 
         if len(parsed_address) == 0:
@@ -433,7 +432,7 @@ def verify_account(http, token, username, password, address):
         execute_data_post(http, "/make_user", body={
             "email": email,
             "username": username,
-            "password": second_pass,
+            "password": hashed_password,
             "address": full_address,
             "location": {
                 "lat": lat,
@@ -444,17 +443,80 @@ def verify_account(http, token, username, password, address):
         print("decoding failed")
         print(e)
 
-
-def request_reset():
-    pass
+    return make_internal_error_response()
 
 
-def verify_reset():
-    pass
+def request_reset(email, callback):
+    if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+        return make_invalid_request_response()
+
+    encoded = jwt.encode({
+        "eml": email,
+        "exp": (datetime.datetime.now() + datetime.timedelta(days=1)).isoformat()
+    }, JWT_SECRET, algorithm="HS256")
+    print("CREATE ACCOUNT REQUEST:")
+    print(f"\t{callback}{encoded}")
+    # TODO: send email
 
 
-def login():
-    pass
+def verify_reset(http, token, password):
+    try:
+        decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        email = decoded["eml"]
+        if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
+            return make_invalid_request_response()
+
+        res = execute_data_get(http, f"/get_user_by_email?address={email}")
+        if res.status != 200:
+            return make_internal_error_response()
+
+        res_json = res.json()
+        user_id = res_json["user_id"]
+        username = res_json["username"]
+
+        salt = hashlib.sha256(username.encode("ascii"),
+                              usedforsecurity=True).hexdigest()
+        hashed_password = hashlib.sha256(
+            f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
+
+        execute_data_post(http, "/update_user_password", body={
+            "user_id": user_id,
+            "password": hashed_password,
+        })
+    except Exception as e:
+        print("decoding failed")
+        print(e)
+
+    return make_internal_error_response()
+
+
+def login(http, username, password):
+    res = execute_data_get(http, f"/get_user_info_for_login?usr={username}")
+
+    if res.status != 200:
+        return make_invalid_request_response()
+
+    res_json = res.json()
+
+    user_id = res_json["user_id"]
+    existing_password = res_json["password"]
+
+    salt = hashlib.sha256(username.encode("ascii"),
+                          usedforsecurity=True).hexdigest()
+    hashed_password = hashlib.sha256(
+        f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
+
+    if hashed_password == existing_password:
+        # generate token
+        token = jwt.encode({
+            "exp": (datetime.datetime.now() + datetime.timedelta(hours=3)).isoformat(),
+            "uid": user_id,
+        })
+        return make_ok_response(headers={
+            "Set-Cookie": f"Authorization={token}"
+        })
+
+    return make_invalid_request_response()
 
 
 def not_implemented():
