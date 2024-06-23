@@ -42,6 +42,20 @@ def make_ok_response(body=None, headers: dict = None):
     return result
 
 
+def make_created_response(body=None, headers: dict = None):
+    result = {
+        "statusCode": 201,
+    }
+
+    if headers:
+        result["headers"] = headers,
+
+    if body:
+        result["body"] = json.dumps(body)
+
+    return result
+
+
 def make_invalid_request_response(message: str = ""):
     return {
         "statusCode": 400,
@@ -85,6 +99,10 @@ def execute_data_get(http, path):
 
 def execute_data_post(http, path, body):
     return execute_data_request(http, path, "POST", body)
+
+
+def execute_data_delete(http, path):
+    return execute_data_request(http, path, "DELETE", None)
 
 
 def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
@@ -275,6 +293,206 @@ def get_search_history_by_id(http, auth_token, user_id):
         return make_not_found_response()
 
     return make_internal_error_response()
+
+
+def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing?listingId={listing_id}")
+    if result.status == 200:
+        try:
+            data = result.json()
+            sellerId = data["sellerId"]
+            listingId = data["listingId"]
+            title = data["title"]
+            price = data["price"]
+            full_address = data["address"]
+            status = data["status"]
+            listedAt: datetime.datetime = data["listedAt"]
+            lastUpdatedAt: datetime.datetime = data["lastUpdatedAt"]
+
+            safe_address = address_to_postal_code(full_address)
+
+            return make_ok_response(body={
+                "sellerId": sellerId,
+                "listingId": listingId,
+                "title": title,
+                "price": price,
+                "location": safe_address,
+                "status": status,
+                "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            })
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+
+def get_my__listings(http: urllib3.PoolManager, auth_token):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing/me")
+    if result.status == 200:
+        try:
+            data = result.json()
+
+            listings_list = []
+
+            for listing in data:
+                sellerId = listing["sellerId"]
+                listingId = listing["listingId"]
+                title = listing["title"]
+                price = listing["price"]
+                full_address = listing["address"]
+                safe_address = address_to_postal_code(full_address)
+                status = listing["status"]
+                listedAt: datetime.datetime = listing["listedAt"]
+                lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
+
+                listings_list.append({
+                    "sellerId": sellerId,
+                    "listingId": listingId,
+                    "title": title,
+                    "price": price,
+                    "location": safe_address,
+                    "status": status,
+                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                })
+
+            return make_ok_response(body=listings_list)
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+
+def get_sorted__listings(http: urllib3.PoolManager, auth_token, keywords):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing?{keywords}")
+    if result.status == 200:
+        try:
+            data = result.json()
+
+            listings_list = []
+
+            for listing in data:
+                sellerId = listing["sellerId"]
+                listingId = listing["listingId"]
+                title = listing["title"]
+                price = listing["price"]
+                full_address = listing["address"]
+                safe_address = address_to_postal_code(full_address)
+                status = listing["status"]
+                listedAt: datetime.datetime = listing["listedAt"]
+                lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
+
+                listings_list.append({
+                    "sellerId": sellerId,
+                    "listingId": listingId,
+                    "title": title,
+                    "price": price,
+                    "location": safe_address,
+                    "status": status,
+                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                })
+
+            return make_ok_response(body=listings_list)
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+
+def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_post(http, f"/create_listing", {
+        "sellerId": creds,
+        "title": listing_data["title"],
+        "price": listing_data["price"],
+        "location": listing_data["location"],
+        "address": listing_data["address"],
+        "status": listing_data["status"],    
+    })
+    if result.status == 201:
+        try:
+            data = result.json()
+            return make_created_response(body={
+                "listingId": data["listingId"],
+            })
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
+
+
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_post(http, f"/update_listing?listingId={listing_id}", updated_listing_data)
+    if result.status == 200:
+        try:
+            data = result.json()
+            return make_ok_response()
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
+    
+
+def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_delete(http, f"/delete_listing?listingId={listing_id}")
+    if result.status == 200:
+        try:
+            data = result.json()
+            return make_ok_response()
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
 
 
 def get_chats(http, auth_token):
