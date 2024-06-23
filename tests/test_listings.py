@@ -193,11 +193,92 @@ def test_delete_listing_fail():
     assert expected == actual
 
 def test_get_sorted_listings_success():
-    
-    pass
+    keywords = "status=AVAILABLE"
+
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn([
+        {
+        "sellerId": 3333,
+        "listingId": 1111,
+        "title": "Chair",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+        "listedAt": datetime.datetime.fromisoformat("2021-01-01T00:00:00Z"),
+        "lastUpdatedAt": datetime.datetime.fromisoformat("2021-01-01T00:00:00Z"),
+        },
+        {
+        "sellerId": 3333,
+        "listingId": 1111,
+        "title": "Chair",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+        "listedAt": datetime.datetime.fromisoformat("2021-01-01T00:00:00Z"),
+        "lastUpdatedAt": datetime.datetime.fromisoformat("2021-01-01T00:00:00Z"),
+        },
+
+    ])
+    when(http).request("GET", "http://test/get_listing?status=AVAILABLE", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 200,
+        "body": json.dumps([
+            {
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "V8W",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            },
+            {
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "V8W",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            },
+        ])
+    }
+    actual = gateway.get_sorted__listings(http, token, keywords)
+    assert expected == actual
 
 def test_get_sorted_listings_fail():
-    pass
+    keywords = "status=AVAILABLE"
+
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 404,
+    })
+    when(http).request("GET", "http://test/get_listing?status=AVAILABLE", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "Listing not found"
+        }),
+    }
+    actual = gateway.get_sorted__listings(http, token, keywords)
+    assert expected == actual
 
 def test_get_listing_by_id_success():
     http = mock(urllib3.PoolManager())
