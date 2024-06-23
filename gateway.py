@@ -101,6 +101,10 @@ def execute_data_post(http, path, body):
     return execute_data_request(http, path, "POST", body)
 
 
+def execute_data_delete(http, path):
+    return execute_data_request(http, path, "DELETE", None)
+
+
 def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
     creds = resolve_credentials(auth_token)
     if not creds:
@@ -401,6 +405,43 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
     elif result.status == 400:
         return make_invalid_request_response("Invalid request")
 
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_post(http, f"/update_listing?listingId={listing_id}", updated_listing_data)
+    if result.status == 200:
+        try:
+            data = result.json()
+            return make_ok_response()
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
+    
+def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = execute_data_delete(http, f"/delete_listing?listingId={listing_id}")
+    if result.status == 200:
+        try:
+            data = result.json()
+            return make_ok_response()
+        
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+    elif result.status == 400:
+        return make_invalid_request_response("Invalid request")
 
 
 def get_chats(http, auth_token):

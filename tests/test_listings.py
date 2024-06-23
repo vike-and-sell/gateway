@@ -82,18 +82,118 @@ def test_create_listing_fail():
     assert expected == actual
 
 def test_patch_listing_success():
-    pass
+    updated_listing_data = {        
+        "sellerId": 5678,
+        "title": "Table",
+        "price": 10.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    }
+
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn({
+        "listingId": 1234,
+    })
+    when(http).request("POST", "http://test/update_listing?listingId=1111", body={
+        "sellerId": 5678,
+        "title": "Table",
+        "price": 10.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 200,
+    }
+    actual = gateway.update_listing(http, token, 1111, updated_listing_data)
+    assert expected == actual
 
 def test_patch_listing_fail():
-    pass
+    updated_listing_data = { 
+        "sellerId": 5678,  
+        "title": "",
+        "price": 10.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    }
+
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 400,
+    })
+    when(http).request("POST", "http://test/update_listing?listingId=1111", body={
+        "sellerId": 5678,
+        "title": "",
+        "price": 10.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid request"
+        }),
+    }
+    actual = gateway.update_listing(http, token, 1111, updated_listing_data)
+    assert expected == actual
 
 def test_delete_listing_success():
-    pass
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 200,
+    })
+    when(http).request("DELETE", "http://test/delete_listing?listingId=1111", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 200,
+    }
+    actual = gateway.delete_listing(http, token, 1111)
+    assert expected == actual
 
 def test_delete_listing_fail():
-    pass
+    http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 404,
+    })
+    when(http).request("DELETE", "http://test/delete_listing?listingId=1111", body=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 404,
+        "body": json.dumps({
+            "message": "Listing not found"
+        }),
+    }
+    actual = gateway.delete_listing(http, token, 1111)
+    assert expected == actual
 
 def test_get_sorted_listings_success():
+    
     pass
 
 def test_get_sorted_listings_fail():
