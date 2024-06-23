@@ -1,14 +1,12 @@
 from flask import Blueprint, Response, request
 import gateway
+from shared import make_response
+
 
 import urllib3
 http = urllib3.PoolManager()
 
 users_bp = Blueprint('user', __name__)
-
-
-def make_response(result):
-    return Response(result.get("body"), status=result.get("statusCode"), mimetype="application/json")
 
 
 @users_bp.patch('/<int:user_id>')

@@ -8,6 +8,7 @@ services:
       DATA_URL: "datalayer:8089"
       DATA_API_KEY: "apikey123"
       JWT_SECRET_KEY: "secret123"
+      MAPS_API_KEY: "changeme123"
     ports:
       - 8080:8080
 

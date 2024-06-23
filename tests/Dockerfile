@@ -13,7 +13,7 @@ ENV JWT_SECRET_KEY=testjwtsecret
 RUN pip install -r requirements.txt
 RUN pip install mockito pytest
 
-COPY ./tests ./
+COPY ./tests/*.py ./
 COPY gateway.py ./
 
 CMD ["python3", "-u", "-m", "pytest"]

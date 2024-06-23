@@ -1,7 +1,7 @@
 from mockito import when, mock, verify
 import urllib3
 import json
-from test_utils import sign_jwt_for_test, DATA_API_KEY
+from test_utils import sign_jwt_for_test, DATA_API_KEY, MAPS_API_KEY
 import datetime
 
 import gateway
@@ -35,7 +35,7 @@ def test_get_user_by_id_success_path():
         "body": json.dumps({
             "username": "bob1",
             "location": "V8W",
-            "joiningDate": "2000-01-01T00:00:00Z",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": ["12345", "67890"],
             "itemsPurchased": ["56789", "98765"],
         })
@@ -80,14 +80,36 @@ def test_get_user_by_id_no_creds():
 
 
 def test_update_user_by_id_success_path():
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
     http = mock(urllib3.PoolManager())
+
+    geocode_response = mock({
+        "status": 200,
+    })
+    when(geocode_response).json().thenReturn({
+        "results": [
+            {
+                "position": {
+                    "lat": 123,
+                    "lon": 456,
+                }
+            }
+        ]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
 
     response = mock({
         "status": 200,
     })
     when(http).request("POST", "http://test/update_user", body={
         "userId": 5678,
-        "address": "500 Fort St, Victoria, BC V8W 1E5"
+        "address": address,
+        "location": {
+            "lat": 123,
+            "lng": 456
+        }
     }, headers={
         "X-Api-Key": DATA_API_KEY
     }).thenReturn(response)
@@ -178,7 +200,7 @@ def test_get_user_by_me_success_path():
         "body": json.dumps({
             "username": "bob1",
             "location": "V8W",
-            "joiningDate": "2000-01-01T00:00:00Z",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": ["12345", "67890"],
             "itemsPurchased": ["56789", "98765"],
         })
