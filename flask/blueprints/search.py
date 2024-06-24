@@ -1,6 +1,5 @@
-from flask import Blueprint, Response
+from flask import Blueprint, Response, make_response
 import gateway
-from shared import make_response
 
 search_bp = Blueprint('search', __name__)
 
