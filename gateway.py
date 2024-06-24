@@ -59,10 +59,13 @@ def make_ok_response(body=None, headers: dict = None, auth: dict = None):
     return result
 
 
-def make_created_response(body=None, headers: dict = None):
+def make_created_response(body=None, headers: dict = None, auth: dict = None):
     result = {
         "statusCode": 201,
     }
+
+    if auth is not None:
+        result["auth"] = auth
 
     if body:
         result["body"] = json.dumps(body)
@@ -667,14 +670,17 @@ def verify_account(http, token, username, password, address):
         if result.status == 200:
             b = result.json()
             user_id = b["user_id"]
+            exp = datetime.datetime.now(
+                datetime.UTC) + datetime.timedelta(hours=3)
             token = jwt.encode({
-                "exp": int((datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=3)).timestamp()),
+                "exp": int(exp.timestamp()),
                 "uid": user_id,
             }, JWT_SECRET)
             return make_created_response(body={
                 "userId": user_id
-            }, headers={
-                "Set-Cookie": f"Authorization={token}"
+            }, auth={
+                "jwt": token,
+                "exp": exp,
             })
         elif result.status == 400:
             return make_invalid_request_response("Account already exists")
