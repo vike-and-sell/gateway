@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, make_response, request
+from flask import Blueprint, Response, request
 import gateway
 from .common import make_response
 import urllib3

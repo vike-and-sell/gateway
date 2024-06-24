@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, make_response
+from flask import Blueprint, Response
 import gateway
 from .common import make_response
 
