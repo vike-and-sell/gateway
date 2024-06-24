@@ -255,7 +255,7 @@ def test_get_sorted_listings_success():
             },
         ])
     }
-    actual = gateway.get_sorted__listings(http, token, keywords)
+    actual = gateway.get_sorted_listings(http, token, keywords)
     assert expected == actual
 
 def test_get_sorted_listings_fail():
@@ -277,7 +277,7 @@ def test_get_sorted_listings_fail():
             "message": "Listing not found"
         }),
     }
-    actual = gateway.get_sorted__listings(http, token, keywords)
+    actual = gateway.get_sorted_listings(http, token, keywords)
     assert expected == actual
 
 def test_get_listing_by_id_success():
@@ -399,7 +399,7 @@ def test_get_my_listings_success():
             },
         ])
     }
-    actual = gateway.get_my__listings(http, token)
+    actual = gateway.get_my_listings(http, token)
     assert expected == actual
 
 def test_get_my_listings_auth_fail():
@@ -409,6 +409,6 @@ def test_get_my_listings_auth_fail():
         "statusCode": 401,
     }
 
-    actual = gateway.get_my__listings(http, None)
+    actual = gateway.get_my_listings(http, None)
     assert expected == actual
 

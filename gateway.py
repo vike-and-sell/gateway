@@ -335,7 +335,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
     return make_internal_error_response()
 
 
-def get_my__listings(http: urllib3.PoolManager, auth_token):
+def get_my_listings(http: urllib3.PoolManager, auth_token):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -381,7 +381,7 @@ def get_my__listings(http: urllib3.PoolManager, auth_token):
     return make_internal_error_response()
 
 
-def get_sorted__listings(http: urllib3.PoolManager, auth_token, keywords):
+def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
