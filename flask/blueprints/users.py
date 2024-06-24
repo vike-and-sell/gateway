@@ -1,16 +1,19 @@
 from flask import Blueprint, Response, make_response, request
 import gateway
+from .common import make_response
 import urllib3
 
 http = urllib3.PoolManager()
 
 users_bp = Blueprint('user', __name__)
 
+
 @users_bp.patch('/<int:user_id>')
 def patch_user(user_id):
     auth_token = request.cookies.get("Authorization")
-    result = gateway.update_user_by_id(http, auth_token, user_id, request.json.get("address"))
-    return make_response(result)    
+    result = gateway.update_user_by_id(
+        http, auth_token, user_id, request.json.get("address"))
+    return make_response(result)
 
 
 @users_bp.get('/me')
