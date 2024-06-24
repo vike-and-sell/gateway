@@ -45,13 +45,13 @@ def resolve_credentials(auth_token: str):
         return None
 
 
-def make_ok_response(body=None, headers: dict = None):
+def make_ok_response(body=None, headers: dict = None, auth: dict = None):
     result = {
         "statusCode": 200,
     }
 
-    if headers is not None:
-        result["headers"] = headers,
+    if auth is not None:
+        result["auth"] = auth
 
     if body is not None:
         result["body"] = json.dumps(body)
@@ -63,9 +63,6 @@ def make_created_response(body=None, headers: dict = None):
     result = {
         "statusCode": 201,
     }
-
-    if headers:
-        result["headers"] = headers,
 
     if body:
         result["body"] = json.dumps(body)
@@ -107,7 +104,7 @@ def execute_data_request(http: urllib3.PoolManager, path, method, body):
     headers = {
         "X-Api-Key": DATA_API_KEY,
     }
-    return http.request(method, f"http://{DATA_URL}{path}", body=body, headers=headers)
+    return http.request(method, f"http://{DATA_URL}{path}", json=body, headers=headers)
 
 
 def execute_data_get(http, path):
@@ -379,7 +376,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 })
 
             return make_ok_response(body=listings_list)
-        
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -425,7 +422,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                 })
 
             return make_ok_response(body=listings_list)
-        
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -440,14 +437,14 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
+
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
         "title": listing_data["title"],
         "price": listing_data["price"],
         "location": listing_data["location"],
         "address": listing_data["address"],
-        "status": listing_data["status"],    
+        "status": listing_data["status"],
     })
     if result.status == 201:
         try:
@@ -455,7 +452,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
             return make_created_response(body={
                 "listingId": data["listingId"],
             })
-        
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -468,32 +465,34 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_li
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
-    result = execute_data_post(http, f"/update_listing?listingId={listing_id}", updated_listing_data)
+
+    result = execute_data_post(
+        http, f"/update_listing?listingId={listing_id}", updated_listing_data)
     if result.status == 200:
         try:
             data = result.json()
             return make_ok_response()
-        
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
             make_internal_error_response()
     elif result.status == 400:
         return make_invalid_request_response("Invalid request")
-    
+
 
 def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
-    result = execute_data_delete(http, f"/delete_listing?listingId={listing_id}")
+
+    result = execute_data_delete(
+        http, f"/delete_listing?listingId={listing_id}")
     if result.status == 200:
         try:
             data = result.json()
             return make_ok_response()
-        
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -612,23 +611,27 @@ def request_account(email, callback):
 
     encoded = jwt.encode({
         "eml": email,
-        "exp": (datetime.datetime.now() + datetime.timedelta(days=1)).isoformat()
+        "exp": int((datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)).timestamp())
     }, JWT_SECRET, algorithm="HS256")
     print("CREATE ACCOUNT REQUEST:")
     print(f"\t{callback}{encoded}")
     # TODO: send email
+    return make_ok_response()
 
 
 def verify_account(http, token, username, password, address):
     try:
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         email = decoded["eml"]
-        if not re.match("^[a-zA-Z0-9_@]{6,20}$", username):
-            return make_invalid_request_response()
-        if not re.match("^[^@]+@uvic\.ca$", email):
-            return make_invalid_request_response()
-        if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
-            return make_invalid_request_response()
+        if not re.match(r"^[a-zA-Z0-9_@]{6,20}$", username):
+            print("invalid username format")
+            return make_invalid_request_response("Username does not meet the requirements")
+        if not re.match(r"^[^@]+@uvic\.ca$", email):
+            print("invalid email format")
+            return make_invalid_request_response("Email does not meet the requirements")
+        if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
+            print("invalid password format")
+            return make_invalid_request_response("Password does not meet the requirements")
 
         salt = hashlib.sha256(username.encode("ascii"),
                               usedforsecurity=True).hexdigest()
@@ -638,16 +641,18 @@ def verify_account(http, token, username, password, address):
         parsed_address = pyap.parse(address, country="CA")
 
         if len(parsed_address) == 0:
+            print(f"failed to parse address {address}")
             return make_invalid_request_response("Invalid address")
 
         full_address = parsed_address[0].full_address
 
         geocode_result = address_to_latlng(http, full_address)
         if geocode_result is None:
+            print(f"failed to geocode address {address}")
             return make_internal_error_response()
 
         lat, lng = geocode_result
-        execute_data_post(http, "/make_user", body={
+        body = {
             "email": email,
             "username": username,
             "password": hashed_password,
@@ -655,8 +660,27 @@ def verify_account(http, token, username, password, address):
             "location": {
                 "lat": lat,
                 "lng": lng
-            }
-        })
+            },
+            "join_date": datetime.datetime.now(datetime.UTC).isoformat()
+        }
+        result = execute_data_post(http, "/make_user", body=body)
+        if result.status == 200:
+            b = result.json()
+            user_id = b["user_id"]
+            token = jwt.encode({
+                "exp": int((datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=3)).timestamp()),
+                "uid": user_id,
+            }, JWT_SECRET)
+            return make_created_response(body={
+                "userId": user_id
+            }, headers={
+                "Set-Cookie": f"Authorization={token}"
+            })
+        elif result.status == 400:
+            return make_invalid_request_response("Account already exists")
+        else:
+            print(f"failed to call data layer, status={result.status}")
+            return make_internal_error_response()
     except Exception as e:
         print("decoding failed")
         print(e)
@@ -670,18 +694,19 @@ def request_reset(email, callback):
 
     encoded = jwt.encode({
         "eml": email,
-        "exp": (datetime.datetime.now() + datetime.timedelta(days=1)).isoformat()
+        "exp": int((datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)).timestamp())
     }, JWT_SECRET, algorithm="HS256")
     print("CREATE ACCOUNT REQUEST:")
     print(f"\t{callback}{encoded}")
     # TODO: send email
+    return make_ok_response()
 
 
 def verify_reset(http, token, password):
     try:
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         email = decoded["eml"]
-        if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
+        if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
             return make_invalid_request_response()
 
         res = execute_data_get(http, f"/get_user_by_email?address={email}")
@@ -701,6 +726,7 @@ def verify_reset(http, token, password):
             "user_id": user_id,
             "password": hashed_password,
         })
+        return make_ok_response()
     except Exception as e:
         print("decoding failed")
         print(e)
@@ -726,12 +752,14 @@ def login(http, username, password):
 
     if hashed_password == existing_password:
         # generate token
+        exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=3)
         token = jwt.encode({
-            "exp": (datetime.datetime.now() + datetime.timedelta(hours=3)).isoformat(),
+            "exp": int(exp.timestamp()),
             "uid": user_id,
-        })
-        return make_ok_response(headers={
-            "Set-Cookie": f"Authorization={token}"
+        }, JWT_SECRET)
+        return make_ok_response(auth={
+            "jwt": token,
+            "exp": exp,  # must pass the expiration time as a datetime as well so that flask can set the expiration field on the cookie
         })
 
     return make_invalid_request_response()

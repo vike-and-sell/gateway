@@ -5,10 +5,10 @@ services:
     build: .
     restart: always
     environment:
-      DATA_URL: "datalayer:8089"
-      DATA_API_KEY: "apikey123"
-      JWT_SECRET_KEY: "secret123"
-      MAPS_API_KEY: "changeme123"
+      DATA_URL: ${DATA_URL}
+      DATA_API_KEY: ${DATA_API_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MAPS_API_KEY: ${MAPS_API_KEY}
     ports:
       - 8080:8080
 

@@ -1,3 +1,4 @@
 flask_lib/blueprints/__pycache__/*
 **/__pycache__/*
 build
+.env
