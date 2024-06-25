@@ -15,8 +15,8 @@ def my_chats():
     return make_response(result)
 
 
-@chats_bp.get('/<int:chats_id>')
-def get_chats(chats_id):
+@chats_bp.get('/<int:chat_id>')
+def get_chats(chat_id):
     auth_token = request.cookies.get("Authorization")
-    result = gateway.get_messages(http, auth_token, chats_id)
+    result = gateway.get_chat_preview(http, auth_token, chat_id)
     return make_response(result)

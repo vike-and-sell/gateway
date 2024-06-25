@@ -319,11 +319,12 @@ def get_search_history_by_id(http, auth_token, user_id):
     if not creds or creds != user_id:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_searches?userId={user_id}")
+    result = execute_data_get(http, f"/get_search_history?userId={user_id}")
 
     if result.status == 200:
         data = result.json()
-        return make_ok_response(body=data["searches"])
+        print(data)
+        return make_ok_response(body=[x['search_text'] for x in data])
     elif result.status == 404:
         return make_not_found_response()
 
@@ -543,7 +544,7 @@ def get_chats(http, auth_token):
 
     if result.status == 200:
         data = result.json()
-        body = [str(x) for x in data["chats"]]
+        body = [str(x) for x in data]
         return make_ok_response(body)
     if result.status == 404:
         return make_ok_response([])
@@ -560,12 +561,13 @@ def get_messages(http, auth_token, chat_id):
 
     if result.status == 200:
         data = result.json()
+        print(data)
         messages = [{
-            "messageId": str(x["messageId"]),
-            "senderId": str(x["sender"]),
-            "content": str(x["content"]),
-            "timestamp": x["timestamp"].isoformat()
-        } for x in data["messages"]]
+            "messageId": str(x["message_id"]),
+            "senderId": str(x["sender_id"]),
+            "content": str(x["message_content"]),
+            "timestamp": x["created_on"]
+        } for x in data]
         return make_ok_response({
             "messages": messages
         })
@@ -587,10 +589,11 @@ def get_chat_preview(http, auth_token, chat_id):
             http, f"/get_last_message_timestamp?chatId={chat_id}")
         if last_message_result.status == 200:
             chat_json = chat_info.json()
+            print(chat_json)
             last_message_json = last_message_result.json()
             users = [str(chat_json["seller"]), str(chat_json["buyer"])]
-            listing_id = str(chat_json["listingId"])
-            last_message_time = last_message_json["timestamp"].isoformat()
+            listing_id = str(chat_json["listing_id"])
+            last_message_time = last_message_json["timestamp"]
             return make_ok_response({
                 "users": users,
                 "listingId": listing_id,
