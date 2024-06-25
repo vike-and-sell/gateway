@@ -16,6 +16,18 @@ JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 
 
+def parse_address(address):
+    parsed = pyap.parse(address, country="CA")
+
+    if len(parsed) == 0:
+        return None
+
+    if len(parsed[0].postal_code[0:3]) < 3:
+        return None
+
+    return parsed[0]
+
+
 def address_to_latlng(http, address):
     geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                                .format(MAPS_API_KEY, address))
@@ -32,6 +44,7 @@ def address_to_latlng(http, address):
 
 
 def address_to_postal_code(address):
+    print(address)
     parsed = pyap.parse(address, country="CA")
     truncated_postal_code = parsed[0].postal_code[0:3]
     return truncated_postal_code
@@ -130,25 +143,33 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
     result = execute_data_get(http, f"/get_user?userId={user_id}")
     if result.status == 200:
         try:
+            print('start of data processing')
             data = result.json()
+            print('parsed json')
             username = data["username"]
             full_address = data["address"]
-            joining_date: datetime.datetime = data["joining_date"]
+            joining_date = data["joining_date"]
             items_sold = data["items_sold"]
             items_purchased = data["items_purchased"]
 
+            print(type(joining_date))
+            print('parsing address to postal code')
+
             safe_address = address_to_postal_code(full_address)
+
+            print(f'safe address: {safe_address}')
 
             return make_ok_response(body={
                 "username": username,
                 "location": safe_address,
-                "joiningDate": joining_date.isoformat(),
+                "joiningDate": joining_date,
                 "itemsSold": [str(x) for x in items_sold],
                 "itemsPurchased": [str(x) for x in items_purchased],
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
+            print(e)
             make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("User not found")
@@ -157,9 +178,12 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
 
 
 def get_user_by_auth_token(http, auth_token):
+    print("getting user by auth token")
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+
+    print(f"userid: {creds}")
 
     return get_user_by_id(http, auth_token, creds)
 
@@ -259,11 +283,13 @@ def update_user_by_id(http, auth_token, user_id, address):
     if not creds or creds != user_id:
         return make_unauthorized_response()
 
-    parsed_address = pyap.parse(address, country="CA")
-    if len(parsed_address) == 0:
+    print(f"userId: {user_id}")
+
+    parsed_address = parse_address(address)
+    if parsed_address is None:
         return make_invalid_request_response("Invalid address")
 
-    full_address = parsed_address[0].full_address
+    full_address = parsed_address.full_address
 
     geocode_result = address_to_latlng(http, full_address)
     if geocode_result is None:
@@ -273,7 +299,7 @@ def update_user_by_id(http, auth_token, user_id, address):
 
     result = execute_data_post(http, "/update_user", {
         "userId": user_id,
-        "address": parsed_address[0].full_address,
+        "address": full_address,
         "location": {
             "lat": lat,
             "lng": lng,
@@ -309,6 +335,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
     if not creds:
         return make_unauthorized_response()
 
+    print(f"listingId: {listing_id}")
     result = execute_data_get(http, f"/get_listing?listingId={listing_id}")
     if result.status == 200:
         try:
@@ -641,13 +668,13 @@ def verify_account(http, token, username, password, address):
         hashed_password = hashlib.sha256(
             f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
 
-        parsed_address = pyap.parse(address, country="CA")
+        parsed_address = parse_address(address)
 
-        if len(parsed_address) == 0:
+        if parsed_address is None:
             print(f"failed to parse address {address}")
             return make_invalid_request_response("Invalid address")
 
-        full_address = parsed_address[0].full_address
+        full_address = parsed_address.full_address
 
         geocode_result = address_to_latlng(http, full_address)
         if geocode_result is None:
@@ -715,8 +742,11 @@ def verify_reset(http, token, password):
         if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$", password):
             return make_invalid_request_response()
 
-        res = execute_data_get(http, f"/get_user_by_email?address={email}")
+        print(f"email: {email}")
+        res = execute_data_get(http, f"/get_user_by_email?eml={email}")
+        print(res.status)
         if res.status != 200:
+            print("could not get user by email")
             return make_internal_error_response()
 
         res_json = res.json()
@@ -741,9 +771,11 @@ def verify_reset(http, token, password):
 
 
 def login(http, username, password):
+    print(f"username: {username} password: {password}")
     res = execute_data_get(http, f"/get_user_info_for_login?usr={username}")
 
     if res.status != 200:
+        print("username lookup failed")
         return make_invalid_request_response()
 
     res_json = res.json()
@@ -756,6 +788,8 @@ def login(http, username, password):
     hashed_password = hashlib.sha256(
         f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
 
+    print(f"hashed: {hashed_password}")
+    print(f"existing: {existing_password}")
     if hashed_password == existing_password:
         # generate token
         exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=3)
@@ -768,6 +802,7 @@ def login(http, username, password):
             "exp": exp,  # must pass the expiration time as a datetime as well so that flask can set the expiration field on the cookie
         })
 
+    print("invalid password")
     return make_invalid_request_response()
 
 

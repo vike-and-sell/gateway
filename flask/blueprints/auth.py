@@ -51,5 +51,6 @@ def verify_reset():
     body = request.get_json()
     token = body["jwt"]
     password = body["password"]
+    print(f"jwt: {token} password: {password}")
     result = gateway.verify_reset(http, token, password)
     return make_response(result)
