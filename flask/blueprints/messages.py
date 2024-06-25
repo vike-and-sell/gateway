@@ -8,10 +8,12 @@ http = urllib3.PoolManager()
 messages_bp = Blueprint('messages', __name__)
 
 
-@messages_bp.get('/updates')
-def get_updates(messages_id):
+@messages_bp.post('/<int:chat_id>')
+def get_updates(chat_id):
     auth_token = request.cookies.get("Authorization")
-    result = gateway.not_implemented()
+    body = request.get_json()
+    content = body["content"]
+    result = gateway.write_message(http, auth_token, chat_id, content)
     return make_response(result)
 
 

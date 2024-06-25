@@ -39,11 +39,17 @@ def login():
 
 @auth_bp.post('/request_reset')
 def request_reset():
-    result = gateway.not_implemented()
+    body = request.get_json()
+    email = body["email"]
+    callback = body["callback"]
+    result = gateway.request_reset(email, callback)
     return make_response(result)
 
 
 @auth_bp.post('/verify_reset')
 def verify_reset():
-    result = gateway.not_implemented()
+    body = request.get_json()
+    token = body["jwt"]
+    password = body["password"]
+    result = gateway.verify_reset(http, token, password)
     return make_response(result)
