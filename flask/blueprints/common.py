@@ -9,6 +9,6 @@ def make_response(result: dict):
         jwt = auth["jwt"]
         expiration = auth["exp"]
         resp.set_cookie('Authorization', jwt,
-                        expires=expiration, httponly=True)
+                        expires=expiration, httponly=True, samesite="None", secure=True)
 
     return resp
