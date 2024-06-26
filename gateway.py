@@ -500,6 +500,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_li
     if not creds:
         return make_unauthorized_response()
 
+    updated_listing_data['listingId'] = listing_id
     result = execute_data_post(
         http, f"/update_listing", updated_listing_data)
     if result.status == 200:
