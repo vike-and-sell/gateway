@@ -359,8 +359,8 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
                 "price": price,
                 "location": safe_address,
                 "status": status,
-                "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "listedAt": listedAt,
+                "lastUpdatedAt": lastUpdatedAt,
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
@@ -377,7 +377,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     if not creds:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_listing/me")
+    result = execute_data_get(http, f"/get_listing_by_user?userId={creds}")
     if result.status == 200:
         try:
             data = result.json()
@@ -402,8 +402,8 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                     "price": price,
                     "location": safe_address,
                     "status": status,
-                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "listedAt": listedAt,
+                    "lastUpdatedAt": lastUpdatedAt
                 })
 
             return make_ok_response(body=listings_list)
@@ -423,7 +423,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     if not creds:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_listing?{keywords}")
+    result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
         try:
             data = result.json()
@@ -448,8 +448,8 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                     "price": price,
                     "location": safe_address,
                     "status": status,
-                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "listedAt": listedAt,
+                    "lastUpdatedAt": lastUpdatedAt,
                 })
 
             return make_ok_response(body=listings_list)
@@ -474,6 +474,8 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
         "title": listing_data["title"],
         "price": listing_data["price"],
         "location": listing_data["location"],
+        "latitude": listing_data['latitude'],
+        "longitude": listing_data['longitude'],
         "address": listing_data["address"],
         "status": listing_data["status"],
     })
@@ -490,15 +492,16 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
             make_internal_error_response()
     elif result.status == 400:
         return make_invalid_request_response("Invalid request")
+    return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
+def update_listing(http: urllib3.PoolManager, auth_token, updated_listing_data):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
 
     result = execute_data_post(
-        http, f"/update_listing?listingId={listing_id}", updated_listing_data)
+        http, f"/update_listing", updated_listing_data)
     if result.status == 200:
         try:
             data = result.json()
