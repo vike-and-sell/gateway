@@ -160,6 +160,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             print(f'safe address: {safe_address}')
 
             return make_ok_response(body={
+                "userId": user_id,
                 "username": username,
                 "location": safe_address,
                 "joiningDate": joining_date,
@@ -677,7 +678,7 @@ def get_search(http, auth_token, q):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
+
     result = http.request("GET", f"http://serber.ddns.net:32500/search?q={q}")
     if result.status == 200:
         try:
@@ -702,7 +703,7 @@ def get_search(http, auth_token, q):
                     "location": safe_address,
                     "status": status,
                     "listedAt": listedAt,
-                    "lastUpdatedAt": listedAt, # will be updated once alg returns last updated time
+                    "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
 
             return make_ok_response(body=listings_list)
@@ -719,9 +720,10 @@ def get_recommendations(http, auth_token):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
-    result = http.request("GET", f"http://serber.ddns.net:32500/recommendations?userId={creds}")
-    
+
+    result = http.request(
+        "GET", f"http://serber.ddns.net:32500/recommendations?userId={creds}")
+
     if result.status == 200:
         try:
             data = result.json()
@@ -745,7 +747,7 @@ def get_recommendations(http, auth_token):
                     "location": safe_address,
                     "status": status,
                     "listedAt": listedAt,
-                    "lastUpdatedAt": listedAt, # will be updated once alg returns last updated time
+                    "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
 
             return make_ok_response(body=listings_list)
