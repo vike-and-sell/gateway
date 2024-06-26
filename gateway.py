@@ -395,7 +395,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     if not creds:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_listing?{keywords}")
+    result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
         try:
             data = result.json()
@@ -420,8 +420,8 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                     "price": price,
                     "location": safe_address,
                     "status": status,
-                    "listedAt": listedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "lastUpdatedAt": lastUpdatedAt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "listedAt": listedAt,
+                    "lastUpdatedAt": lastUpdatedAt,
                 })
 
             return make_ok_response(body=listings_list)
