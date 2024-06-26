@@ -474,7 +474,6 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
         "sellerId": creds,
         "title": listing_data["title"],
         "price": listing_data["price"],
-        "location": listing_data["location"],
         "latitude": listing_data['latitude'],
         "longitude": listing_data['longitude'],
         "address": listing_data["address"],
@@ -496,7 +495,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, updated_listing_data):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
