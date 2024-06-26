@@ -673,6 +673,93 @@ def write_message(http, auth_token, chat_id, content) -> int:
     return make_internal_error_response()
 
 
+def get_search(http, auth_token, q):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = http.request("GET", f"http://serber.ddns.net:32500/search?q={q}")
+    if result.status == 200:
+        try:
+            data = result.json()
+            listings_list = []
+
+            for listing in data:
+                sellerId = listing["seller_id"]
+                listingId = listing["listing_id"]
+                title = listing["title"]
+                price = listing["price"]
+                full_address = listing["address"]
+                safe_address = address_to_postal_code(full_address)
+                status = listing["status"]
+                listedAt = listing["created_on"]
+
+                listings_list.append({
+                    "sellerId": sellerId,
+                    "listingId": listingId,
+                    "title": title,
+                    "price": price,
+                    "location": safe_address,
+                    "status": status,
+                    "listedAt": listedAt,
+                    "lastUpdatedAt": listedAt, # will be updated once alg returns last updated time
+                })
+
+            return make_ok_response(body=listings_list)
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+
+    return make_internal_error_response()
+
+
+def get_recommendations(http, auth_token):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+    
+    result = http.request("GET", f"http://serber.ddns.net:32500/recommendations?userId={creds}")
+    
+    if result.status == 200:
+        try:
+            data = result.json()
+            listings_list = []
+
+            for listing in data:
+                sellerId = listing["seller_id"]
+                listingId = listing["listing_id"]
+                title = listing["title"]
+                price = listing["price"]
+                full_address = listing["address"]
+                safe_address = address_to_postal_code(full_address)
+                status = listing["status"]
+                listedAt = listing["created_on"]
+
+                listings_list.append({
+                    "sellerId": sellerId,
+                    "listingId": listingId,
+                    "title": title,
+                    "price": price,
+                    "location": safe_address,
+                    "status": status,
+                    "listedAt": listedAt,
+                    "lastUpdatedAt": listedAt, # will be updated once alg returns last updated time
+                })
+
+            return make_ok_response(body=listings_list)
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+
 def request_account(email, callback):
     if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
         return make_invalid_request_response()
