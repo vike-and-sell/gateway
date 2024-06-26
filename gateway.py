@@ -555,6 +555,38 @@ def get_chats(http, auth_token):
     return make_internal_error_response()
 
 
+def create_chat(http, auth_token, listingId):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing?listingId={listingId}")
+    if result.status == 404:
+        return make_not_found_response()
+    elif result.status != 200:
+        return make_internal_error_response()
+
+    try:
+        data = result.json()
+        sellerId = data["sellerId"]
+        result = execute_data_post(http, "/create_chat", {
+            "listingId": listingId,
+            "sellerId": sellerId,
+            "buyerId": creds
+        })
+        if result.status == 200:
+            data = result.json()
+            chatId = data["chatId"]
+            return make_created_response(body={
+                "chatId": chatId
+            })
+
+    except Exception as e:
+        print(e)
+
+    return make_internal_error_response()
+
+
 def get_messages(http, auth_token, chat_id):
     creds = resolve_credentials(auth_token)
     if not creds:

@@ -15,6 +15,14 @@ def my_chats():
     return make_response(result)
 
 
+@chats_bp.post('/')
+def create_chat():
+    auth_token = request.cookies.get("Authorization")
+    listingId = request.json.get("listingId")
+    result = gateway.create_chat(http, auth_token, listingId)
+    return make_response(result)
+
+
 @chats_bp.get('/<int:chat_id>')
 def get_chats(chat_id):
     auth_token = request.cookies.get("Authorization")
