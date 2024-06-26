@@ -9,7 +9,8 @@ def test_create_listing_success():
     listing_data = {        
         "title": "Chair",
         "price": 100.00,
-        "location": "12.3456,78.9012",
+        "latitiude": 12.3456,
+        "longitude": 78.9012, 
         "address": "500 Fort St, Victoria, BC V8W 1E5",
         "status": "AVAILABLE",}
 
@@ -24,7 +25,8 @@ def test_create_listing_success():
         "sellerId": 5678,
         "title": "Chair",
         "price": 100.00,
-        "location": "12.3456,78.9012",
+        "latitiude": 12.3456,
+        "longitude": 78.9012, 
         "address": "500 Fort St, Victoria, BC V8W 1E5",
         "status": "AVAILABLE",
     
