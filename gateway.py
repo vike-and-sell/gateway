@@ -378,7 +378,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     if not creds:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_listing_by_user?userId={creds}")
+    result = execute_data_get(http, f"/get_listing_by_seller?userId={creds}")
     if result.status == 200:
         try:
             data = result.json()
