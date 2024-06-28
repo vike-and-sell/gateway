@@ -470,12 +470,15 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
     if not creds:
         return make_unauthorized_response()
 
+    address = listing_data["address"]
+    lat, lng = address_to_latlng(http, address)
+
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
         "title": listing_data["title"],
         "price": listing_data["price"],
-        "latitude": listing_data['latitude'],
-        "longitude": listing_data['longitude'],
+        "latitude": lat,
+        "longitude": lng,
         "address": listing_data["address"],
         "status": listing_data["status"],
     })
