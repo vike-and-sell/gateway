@@ -11,7 +11,7 @@ ENV DATA_API_KEY=testapikey
 ENV JWT_SECRET_KEY=testjwtsecret
 
 RUN pip install -r requirements.txt
-RUN pip install mockito pytest
+RUN pip install mockito pytest freezegun
 
 COPY ./tests/*.py ./
 COPY gateway.py ./
