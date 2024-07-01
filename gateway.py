@@ -471,7 +471,14 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
         return make_unauthorized_response()
 
     address = listing_data["address"]
-    lat, lng = address_to_latlng(http, address)
+    parsed_address = parse_address(address)
+
+    if parsed_address is None:
+        print(f"failed to parse address {address}")
+        return make_invalid_request_response("Invalid address")
+
+    full_address = parsed_address.full_address
+    lat, lng = address_to_latlng(http, full_address)
 
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
