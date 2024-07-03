@@ -11,7 +11,11 @@ listings_bp = Blueprint('listings', __name__)
 @listings_bp.post('/')
 def create_listing():
     auth_token = request.cookies.get("Authorization")
-    result = gateway.create_listing(http, auth_token, request.json)
+    address = request.json.get('address')
+    title = request.json.get('title')
+    price = request.json.get('price')
+    status = request.json.get('status')
+    result = gateway.create_listing(http, auth_token, address, title, price, status) if status else gateway.create_listing(http, auth_token, address, title, price)
     return make_response(result)
 
 

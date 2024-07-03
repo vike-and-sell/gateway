@@ -465,12 +465,11 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     return make_internal_error_response()
 
 
-def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
+def create_listing(http: urllib3.PoolManager, auth_token, address, title, price, status='AVAILABLE'):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
 
-    address = listing_data["address"]
     parsed_address = parse_address(address)
 
     if parsed_address is None:
@@ -482,12 +481,12 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
 
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
-        "title": listing_data["title"],
-        "price": listing_data["price"],
+        "title": title,
+        "price": price,
         "latitude": lat,
         "longitude": lng,
-        "address": listing_data["address"],
-        "status": listing_data["status"],
+        "address": address,
+        "status": status,
     })
     if result.status == 201:
         try:
