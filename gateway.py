@@ -504,25 +504,24 @@ def create_listing(http: urllib3.PoolManager, auth_token, address, title, price,
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title=None, price=None, status=None):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+    request_body = {"listingId": listing_id}
+    if title:
+        request_body['title'] = title
+    if price:
+        request_body['price'] = price
+    if status:
+        request_body['status'] = status
 
-    updated_listing_data['listingId'] = listing_id
-    result = execute_data_post(
-        http, f"/update_listing", updated_listing_data)
+    result = execute_data_post(http, f"/update_listing", request_body)
     if result.status == 200:
-        try:
-            data = result.json()
-            return make_ok_response()
-
-        except json.decoder.JSONDecodeError:
-            return make_not_found_response()
-        except Exception as e:
-            make_internal_error_response()
+        return make_ok_response()
     elif result.status == 400:
         return make_invalid_request_response("Invalid request")
+    return make_internal_error_response()
 
 
 def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):

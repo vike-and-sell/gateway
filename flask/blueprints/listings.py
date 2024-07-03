@@ -22,7 +22,10 @@ def create_listing():
 @listings_bp.patch('/<int:listing_id>')
 def patch_listing(listing_id):
     auth_token = request.cookies.get("Authorization")
-    result = gateway.update_listing(http, auth_token, listing_id, request.json)
+    title = request.json.get('title')
+    price = request.json.get('price')
+    status = request.json.get('status')
+    result = gateway.update_listing(http, auth_token, listing_id, title, price, status)
     return make_response(result)
 
 
