@@ -225,7 +225,8 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
 
     result = execute_data_post(http, f"/create_rating", {
         "listingId": listing_id,
-        "rating": rating
+        "rating": rating,
+        "userId": creds
     })
 
     if result.status == 200:
@@ -272,11 +273,16 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
 
     result = execute_data_post(http, f"/create_review", {
         "listingId": listing_id,
-        "review": review
+        "review": review,
+        "userId": creds
     })
 
     if result.status == 200:
         return make_ok_response()
+    if result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
 
 
 def update_user_by_id(http, auth_token, user_id, address):
