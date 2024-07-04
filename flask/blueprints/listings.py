@@ -11,14 +11,22 @@ listings_bp = Blueprint('listings', __name__)
 @listings_bp.post('/')
 def create_listing():
     auth_token = request.cookies.get("Authorization")
-    result = gateway.create_listing(http, auth_token, request.json)
+    title = request.json.get('title')
+    price = request.json.get('price')
+    address = request.json.get('address')
+    result = gateway.create_listing(http, auth_token, title, price, address)
     return make_response(result)
 
 
 @listings_bp.patch('/<int:listing_id>')
 def patch_listing(listing_id):
     auth_token = request.cookies.get("Authorization")
-    result = gateway.update_listing(http, auth_token, listing_id, request.json)
+    title = request.json.get('title')
+    price = request.json.get('price')
+    address = request.json.get('address')
+    status = request.json.get('status')
+    result = gateway.update_listing(
+        http, auth_token, listing_id, title, price, address, status)
     return make_response(result)
 
 

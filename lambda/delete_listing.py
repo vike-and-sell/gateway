@@ -1,6 +1,14 @@
+from shared import mould_response, get_auth_token, get_path_params
 import gateway
+import urllib3
+http = urllib3.PoolManager()
 
 # PATH: DELETE /listings/{listingId}
 
+
 def handler(event, context):
-    return gateway.not_implemented()
+    auth_token = get_auth_token(event)
+    params = get_path_params(event)
+    listing_id = params.get('listingId')
+    result = gateway.delete_listing(http, auth_token, listing_id)
+    return mould_response(result)

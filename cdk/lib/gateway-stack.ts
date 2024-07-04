@@ -1,21 +1,47 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
-import {
-  AllowedMethods,
-  CachePolicy,
-  Distribution,
-  ResponseHeadersPolicy,
-} from "aws-cdk-lib/aws-cloudfront";
-import { RestApiOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
+import { DomainName, HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
+import { ApiGatewayv2DomainProperties } from "aws-cdk-lib/aws-route53-targets";
+import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 
 export class GatewayStack extends Stack {
   readonly layer: LayerVersion;
+  readonly api: HttpApi;
+  readonly domain: DomainName | undefined;
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    const domainName = "vas.brnn.ca";
+    const zone = HostedZone.fromLookup(this, "BrnnHostedZone", {
+      domainName: "brnn.ca",
+    });
+
+    if (zone) {
+      const cert = Certificate.fromCertificateArn(
+        this,
+        `BrnnCert`,
+        "arn:aws:acm:us-east-1:446708209687:certificate/fcbd7810-fab9-48a4-8f07-e0545199abec",
+      );
+      this.domain = new DomainName(this, "BrnnDomain", {
+        domainName,
+        certificate: cert,
+      });
+      new ARecord(this, "BrnnARecord", {
+        recordName: domainName,
+        zone,
+        target: RecordTarget.fromAlias(
+          new ApiGatewayv2DomainProperties(
+            this.domain.regionalDomainName,
+            this.domain.regionalHostedZoneId,
+          ),
+        ),
+      });
+    }
 
     this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
       layerVersionName: "gateway-python-layer",
@@ -23,111 +49,102 @@ export class GatewayStack extends Stack {
       compatibleRuntimes: [Runtime.PYTHON_3_12],
     });
 
-    const api = new RestApi(this, "GatewayRestApi", {
-      deploy: true,
+    this.api = new HttpApi(this, "GatewayHttpApi", {
+      corsPreflight: {
+        allowOrigins: ["*"],
+      },
+      defaultDomainMapping: this.domain
+        ? {
+            domainName: this.domain,
+          }
+        : undefined,
     });
 
     // Account management
-    const requestAccountResource = api.root.addResource("request_account");
-    requestAccountResource.addMethod("POST", this.handler("request_account"));
+    this.route(HttpMethod.POST, "/request_account", "request_account");
 
-    const verifyAccountResource = api.root.addResource("verify_account");
-    verifyAccountResource.addMethod("POST", this.handler("verify_account"));
+    this.route(HttpMethod.POST, "/verify_account", "verify_account");
 
-    const requestResetResource = api.root.addResource("request_reset");
-    requestResetResource.addMethod("POST", this.handler("request_reset"));
+    this.route(HttpMethod.POST, "/request_reset", "request_reset");
 
-    const verifyResetResource = api.root.addResource("verify_reset");
-    verifyResetResource.addMethod("POST", this.handler("verify_reset"));
+    this.route(HttpMethod.POST, "/verify_reset", "verify_reset");
 
-    const loginResource = api.root.addResource("login");
-    loginResource.addMethod("POST", this.handler("login"));
+    this.route(HttpMethod.POST, "/login", "login");
 
     // Listings
-    const listingsResource = api.root.addResource("listings");
-    listingsResource.addMethod("GET", this.handler("get_sorted_listings"));
-    listingsResource.addMethod("POST", this.handler("create_listing"));
 
-    const listingIdResource = listingsResource.addResource("{listingId}");
-    listingIdResource.addMethod("GET", this.handler("get_listing"));
-    listingIdResource.addMethod("PATCH", this.handler("update_listing"));
-    listingIdResource.addMethod("DELETE", this.handler("delete_listing"));
+    this.route(HttpMethod.GET, "/listings", "get_sorted_listings");
+    this.route(HttpMethod.POST, "/listings", "create_listing");
 
-    const myListingResource = listingsResource.addResource("me");
-    myListingResource.addMethod("GET", this.handler("my_listings"));
+    this.route(HttpMethod.GET, "/listings/{listingId}", "get_listing");
+    this.route(HttpMethod.PATCH, "/listings/{listingId}", "update_listing");
+    this.route(HttpMethod.DELETE, "/listings/{listingId}", "delete_listing");
+
+    this.route(HttpMethod.GET, "/listings/me", "my_listings");
 
     // Users
-    const usersResource = api.root.addResource("users");
+    this.route(HttpMethod.GET, "/users/{userId}", "get_user");
+    this.route(HttpMethod.PATCH, "/users/{userId}", "update_user");
 
-    const userIdResource = usersResource.addResource("{userId}");
-    userIdResource.addMethod("GET", this.handler("get_user"));
-    userIdResource.addMethod("PATCH", this.handler("update_user"));
+    this.route(
+      HttpMethod.GET,
+      "/users/{userId}/searches",
+      "get_search_history",
+    );
 
-    const searchHistoryResource = userIdResource.addResource("searches");
-    searchHistoryResource.addMethod("GET", this.handler("get_search_history"));
-
-    const myUserResource = usersResource.addResource("me");
-    myUserResource.addMethod("GET", this.handler("my_user"));
+    this.route(HttpMethod.GET, "/users/me", "my_user");
 
     // Ratings & Reviews
-    const reviewResource = api.root.addResource("review");
-    const reviewIdResource = reviewResource.addResource("{listingId}");
-    reviewIdResource.addMethod("GET", this.handler("get_reviews"));
-    reviewIdResource.addMethod("POST", this.handler("create_review"));
+    this.route(HttpMethod.GET, "/reviews/{listingId}", "get_reviews");
+    this.route(HttpMethod.POST, "/reviews/{listingId}", "create_review");
 
-    const ratingResource = api.root.addResource("rating");
-    const ratingIdResource = ratingResource.addResource("{listingId}");
-    ratingIdResource.addMethod("GET", this.handler("get_ratings"));
-    ratingIdResource.addMethod("POST", this.handler("create_rating"));
+    this.route(HttpMethod.GET, "/ratings/{listingId}", "get_ratings");
+    this.route(HttpMethod.POST, "/ratings/{listingId}", "create_rating");
 
     // Search
-    const searchResource = api.root.addResource("search");
-    searchResource.addMethod("GET", this.handler("search"));
+    this.route(HttpMethod.GET, "/search", "search");
 
     // Recommendations
-    const recommendationsResource = api.root.addResource("recommendations");
-    recommendationsResource.addMethod("GET", this.handler("recommendations"));
+    this.route(HttpMethod.GET, "/recommendations", "recommendations");
 
-    const recommendationIdResource =
-      recommendationsResource.addResource("{listingId}");
-    const ignoreRecommendationByIdResource =
-      recommendationIdResource.addResource("ignore");
-    ignoreRecommendationByIdResource.addMethod(
-      "POST",
-      this.handler("ignore_recommendation"),
+    this.route(
+      HttpMethod.POST,
+      "/recommendations/{listingId}/ignore",
+      "ignore_recommendation",
     );
 
     // Chats
-    const chatsResource = api.root.addResource("chats");
-    chatsResource.addMethod("GET", this.handler("chats"));
+    this.route(HttpMethod.GET, "/chats", "chats");
+    this.route(HttpMethod.POST, "/chats", "create_chat");
 
-    const chatIdResource = chatsResource.addResource("{chatId}");
-    chatIdResource.addMethod("GET", this.handler("get_chat"));
+    this.route(HttpMethod.GET, "/chats/{chatId}", "get_chat");
 
-    const messagesResource = api.root.addResource("messages");
-    const messageIdResource = messagesResource.addResource("{chatId}");
-    messageIdResource.addMethod("GET", this.handler("get_messages"));
-
-    // Reverse proxy definition using Cloudfront
-    const reverseProxy = new Distribution(this, "GatewayReverseProxy", {
-      defaultBehavior: {
-        origin: new RestApiOrigin(api),
-        cachePolicy: CachePolicy.CACHING_DISABLED,
-        responseHeadersPolicy:
-          ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
-        allowedMethods: AllowedMethods.ALLOW_ALL,
-      },
-    });
+    this.route(HttpMethod.GET, "/messages/{chatId}", "get_messages");
+    this.route(HttpMethod.POST, "/messages/{chatId}", "create_message");
   }
 
-  handler(handlerName: string): LambdaIntegration {
+  handler(handlerName: string): HttpLambdaIntegration {
     const func = new Function(this, handlerName, {
       runtime: Runtime.PYTHON_3_12,
       code: Code.fromAsset(`packaging/${handlerName}.zip`),
       handler: `${handlerName}.handler`,
       layers: [this.layer],
+      environment: {
+        DATA_URL: process.env.DATA_URL ?? "",
+        DATA_API_KEY: process.env.DATA_API_KEY ?? "",
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY ?? "",
+        MAPS_API_KEY: process.env.MAPS_API_KEY ?? "",
+      },
     });
 
-    return new LambdaIntegration(func);
+    return new HttpLambdaIntegration(`${handlerName}-integration`, func);
+  }
+
+  route(method: HttpMethod, path: string, name: string) {
+    this.api.addRoutes({
+      path,
+      methods: [method],
+      integration: this.handler(name),
+    });
   }
 }

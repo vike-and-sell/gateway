@@ -7,6 +7,7 @@ import jwt
 import jwt.exceptions
 import jwt.utils
 import pyap
+import pyap.address
 import urllib3
 import hashlib
 
@@ -16,7 +17,7 @@ JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 
 
-def parse_address(address):
+def parse_address(address) -> pyap.address.Address:
     parsed = pyap.parse(address, country="CA")
 
     if len(parsed) == 0:
@@ -465,29 +466,27 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     return make_internal_error_response()
 
 
-def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
+def create_listing(http: urllib3.PoolManager, auth_token, title, price, address):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
 
-    address = listing_data["address"]
-    parsed_address = parse_address(address)
-
-    if parsed_address is None:
-        print(f"failed to parse address {address}")
+    address = parse_address(address)
+    if not address:
         return make_invalid_request_response("Invalid address")
+    else:
+        address = address.full_address
 
-    full_address = parsed_address.full_address
-    lat, lng = address_to_latlng(http, full_address)
+    lat, lng = address_to_latlng(http, address)
 
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
-        "title": listing_data["title"],
-        "price": listing_data["price"],
+        "title": title,
+        "price": price,
         "latitude": lat,
         "longitude": lng,
-        "address": listing_data["address"],
-        "status": listing_data["status"],
+        "address": address,
+        "status": 'AVAILABLE',
     })
     if result.status == 201:
         try:
@@ -505,14 +504,30 @@ def create_listing(http: urllib3.PoolManager, auth_token, listing_data):
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, updated_listing_data):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
 
-    updated_listing_data['listingId'] = listing_id
+    address = parse_address(address)
+    if not address:
+        return make_invalid_request_response()
+    else:
+        address = address.full_address
+
+    lat, lng = address_to_latlng(http, address)
+
+    # TODO: only update fields that have changed?
     result = execute_data_post(
-        http, f"/update_listing", updated_listing_data)
+        http, f"/update_listing", {
+            "listingId": listing_id,
+            "title": title,
+            "price": price,
+            "address": address,
+            "latitude": lat,
+            "longitude": lng,
+            "status": status,
+        })
     if result.status == 200:
         try:
             data = result.json()
