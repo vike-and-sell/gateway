@@ -1,16 +1,14 @@
 from shared import mould_response, get_auth_token, get_body
+
 import gateway
 import urllib3
 http = urllib3.PoolManager()
-
-# PATH: POST /listings
 
 
 def handler(event, context):
     auth_token = get_auth_token(event)
     body = get_body(event)
-    title = body.get('title')
-    price = body.get('price')
-    address = body.get('location')
-    result = gateway.create_listing(http, auth_token, title, price, address)
+    chat_id = body.get('chatId')
+    content = body.get('content')
+    result = gateway.write_message(http, auth_token, chat_id, content)
     return mould_response(result)

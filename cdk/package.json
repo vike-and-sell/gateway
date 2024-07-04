@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "synth": "sh package.sh && cdk synth",
-    "deploy": "sh package.sh && cdk deploy"
+    "synth": "sh package.sh && export $(cat .env | xargs) && cdk synth",
+    "deploy": "sh package.sh && export $(cat .env | xargs) && cdk deploy"
   },
   "devDependencies": {
     "@aws-cdk/aws-lambda-python-alpha": "^2.146.0-alpha.0",
