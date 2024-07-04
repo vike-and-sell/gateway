@@ -17,31 +17,34 @@ export class GatewayStack extends Stack {
     super(scope, id, props);
 
     const domainName = "vas.brnn.ca";
-    const zone = HostedZone.fromLookup(this, "BrnnHostedZone", {
-      domainName: "brnn.ca",
-    });
+    let zone;
+    try {
+      zone = HostedZone.fromLookup(this, "BrnnHostedZone", {
+        domainName: "brnn.ca",
+      });
 
-    if (zone) {
-      const cert = Certificate.fromCertificateArn(
-        this,
-        `BrnnCert`,
-        "arn:aws:acm:us-east-1:446708209687:certificate/fcbd7810-fab9-48a4-8f07-e0545199abec",
-      );
-      this.domain = new DomainName(this, "BrnnDomain", {
-        domainName,
-        certificate: cert,
-      });
-      new ARecord(this, "BrnnARecord", {
-        recordName: domainName,
-        zone,
-        target: RecordTarget.fromAlias(
-          new ApiGatewayv2DomainProperties(
-            this.domain.regionalDomainName,
-            this.domain.regionalHostedZoneId,
+      if (zone) {
+        const cert = Certificate.fromCertificateArn(
+          this,
+          `BrnnCert`,
+          "arn:aws:acm:us-east-1:446708209687:certificate/fcbd7810-fab9-48a4-8f07-e0545199abec",
+        );
+        this.domain = new DomainName(this, "BrnnDomain", {
+          domainName,
+          certificate: cert,
+        });
+        new ARecord(this, "BrnnARecord", {
+          recordName: domainName,
+          zone,
+          target: RecordTarget.fromAlias(
+            new ApiGatewayv2DomainProperties(
+              this.domain.regionalDomainName,
+              this.domain.regionalHostedZoneId,
+            ),
           ),
-        ),
-      });
-    }
+        });
+      }
+    } catch {}
 
     this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
       layerVersionName: "gateway-python-layer",
