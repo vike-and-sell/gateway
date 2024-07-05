@@ -103,7 +103,7 @@ def test_get_user_by_id_no_creds():
 #     response = mock({
 #         "status": 200,
 #     })
-#     when(http).request("POST", "http://test/update_user", body={
+#     when(http).request("POST", f"http://{DATA_URL}/update_user", json={
 #         "userId": 5678,
 #         "address": address,
 #         "location": {
@@ -188,7 +188,7 @@ def test_update_user_by_id_invalid_address():
 #         "items_sold": [12345, 67890],
 #         "items_purchased": [56789, 98765],
 #     })
-#     when(http).request("GET", "http://test/get_user?userId=5678", json=None, headers={
+#     when(http).request("GET", f"http://{DATA_URL}/get_user?userId=5678", json=None, headers={
 #         "X-Api-Key": DATA_API_KEY,
 #     }).thenReturn(response)
 #     token = sign_jwt_for_test({
