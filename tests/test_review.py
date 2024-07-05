@@ -3,7 +3,7 @@ from mockito import when, mock, verify
 import pytest
 import urllib3
 import json
-from test_utils import sign_jwt_for_test, DATA_API_KEY
+from test_utils import DATA_URL, sign_jwt_for_test, DATA_API_KEY
 
 import gateway
 
@@ -33,7 +33,7 @@ def test_get_reviews_success(setup_module):
         "review": "... this item totally sucks :("
         },
     ])
-    when(http).request("GET", "http://test/get_reviews?listingId=5678", body=None, headers={
+    when(http).request("GET", f"http://{DATA_URL}/get_reviews?listingId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
@@ -61,7 +61,7 @@ def test_get_reviews_listing_not_found(setup_module):
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", "http://test/get_reviews?listingId=5678", body=None, headers={
+    when(http).request("GET", f"http://{DATA_URL}/get_reviews?listingId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
@@ -96,7 +96,7 @@ def test_post_review_success(setup_module):
     response = mock({
         "status": 200
     })
-    when(http).request("POST", "http://test/create_review", body={
+    when(http).request("POST", f"http://{DATA_URL}/create_review", json={
         "listingId": 5678,
         "review": "Ok, now this is awesome!"
     }, headers={
