@@ -10,6 +10,9 @@ import pyap
 import pyap.address
 import urllib3
 import hashlib
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
@@ -796,8 +799,8 @@ def get_recommendations(http, auth_token):
     return make_internal_error_response()
 
 
-def request_account(email, callback):
-    if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+def request_account(smtp: smtplib.SMTP_SSL, email, callback):
+    if not re.match(r"^[^@]+@uvic\.ca$", email):
         return make_invalid_request_response()
 
     encoded = jwt.encode({
@@ -806,7 +809,22 @@ def request_account(email, callback):
     }, JWT_SECRET, algorithm="HS256")
     print("CREATE ACCOUNT REQUEST:")
     print(f"\t{callback}{encoded}")
-    # TODO: send email
+
+    link = f"{callback}{encoded}"
+    text = f"Click this link to continue your registration: <a href={
+        link}>{link}</a>"
+
+    message = MIMEMultipart()
+    message["Subject"] = "Account Creation Request"
+    message["From"] = 'vikeandsell@gmail.com'
+    message["To"] = email
+
+    message.attach(MIMEText(text, "html"))
+
+    try:
+        smtp.sendmail('vikeandsell@gmail.com', email, message.as_string())
+    except:
+        return make_internal_error_response()
     return make_ok_response()
 
 
@@ -882,7 +900,7 @@ def verify_account(http, token, username, password, address):
     return make_internal_error_response()
 
 
-def request_reset(email, callback):
+def request_reset(smtp: smtplib.SMTP_SSL, email, callback):
     if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
         return make_invalid_request_response()
 
@@ -892,7 +910,22 @@ def request_reset(email, callback):
     }, JWT_SECRET, algorithm="HS256")
     print("CREATE ACCOUNT REQUEST:")
     print(f"\t{callback}{encoded}")
-    # TODO: send email
+
+    link = f"{callback}{encoded}"
+    text = f"Click this link to reset your password: <a href={
+        link}>{link}</a>"
+
+    message = MIMEMultipart()
+    message["Subject"] = "Password Reset Request"
+    message["From"] = 'vikeandsell@gmail.com'
+    message["To"] = email
+
+    message.attach(MIMEText(text, "html"))
+
+    try:
+        smtp.sendmail('vikeandsell@gmail.com', email, message.as_string())
+    except:
+        return make_internal_error_response()
     return make_ok_response()
 
 

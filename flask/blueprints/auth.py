@@ -1,6 +1,8 @@
 from .common import make_response
 from flask import Blueprint, Response, request
 import gateway
+import smtplib
+import os
 import urllib3
 http = urllib3.PoolManager()
 
@@ -13,8 +15,10 @@ def request_account():
     body = request.get_json()
     email = body["email"]
     callback = body["callback"]
-    result = gateway.request_account(email, callback)
-    return make_response(result)
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login('vikeandsell@gmail.com', os.environ["GMAIL_APP_PASSWORD"])
+        result = gateway.request_account(server, email, callback)
+        return make_response(result)
 
 
 @auth_bp.post('/verify_account')
@@ -42,8 +46,10 @@ def request_reset():
     body = request.get_json()
     email = body["email"]
     callback = body["callback"]
-    result = gateway.request_reset(email, callback)
-    return make_response(result)
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login('vikeandsell@gmail.com', os.environ["GMAIL_APP_PASSWORD"])
+        result = gateway.request_reset(server, email, callback)
+        return make_response(result)
 
 
 @auth_bp.post('/verify_reset')
