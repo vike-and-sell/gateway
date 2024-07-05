@@ -9,3 +9,4 @@ services:
       DATA_API_KEY: testapikey
       JWT_SECRET_KEY: testjwtsecret
       MAPS_API_KEY: testmapsapikey
+      GMAIL_APP_PASSWORD: gmailpassword123

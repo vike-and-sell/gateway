@@ -9,6 +9,7 @@ services:
       DATA_API_KEY: ${DATA_API_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MAPS_API_KEY: ${MAPS_API_KEY}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
     ports:
       - 8080:8080
 
