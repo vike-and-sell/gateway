@@ -195,7 +195,7 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
     if not creds:
         return make_unauthorized_response()
     if not isinstance(listing_id, int):
-        return make_invalid_request_response("Invalid arg types")
+        return make_invalid_request_response("Invalid args")
 
     result = execute_data_get(http, f"/get_ratings?listingId={listing_id}")
 
@@ -205,7 +205,7 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
         for object in data:
             body.append({
                 "username": object["username"],
-                "created_on": object["created_on"].isoformat(),
+                "created_on": object["created_on"],
                 "rating": object["rating"]
             })
         return make_ok_response(body=body)
@@ -220,13 +220,14 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     if not creds:
         return make_unauthorized_response()
     if not isinstance(listing_id, int) or not isinstance(rating, int):
-        return make_invalid_request_response("Invalid arg types")
+        return make_invalid_request_response("Invalid args")
     if rating < 1 or rating > 5:
         return make_invalid_request_response("Rating should be between 1 and 5")
 
     result = execute_data_post(http, f"/create_rating", {
         "listingId": listing_id,
-        "rating": rating
+        "rating": rating,
+        "userId": creds
     })
 
     if result.status == 200:
@@ -243,7 +244,7 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
     if not creds:
         return make_unauthorized_response()
     if not isinstance(listing_id, int):
-        return make_invalid_request_response("Invalid arg types")
+        return make_invalid_request_response("Invalid args")
 
     result = execute_data_get(http, f"/get_reviews?listingId={listing_id}")
 
@@ -253,7 +254,7 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
         for object in data:
             body.append({
                 "username": object["username"],
-                "created_on": object["created_on"].isoformat(),
+                "created_on": object["created_on"],
                 "review": object["review"]
             })
         return make_ok_response(body=body)
@@ -269,15 +270,22 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
     if not creds:
         return make_unauthorized_response()
     if not isinstance(listing_id, int) or not isinstance(review, str):
-        return make_invalid_request_response("Invalid arg types")
+        return make_invalid_request_response("Invalid args")
+    if review == '':
+        return make_invalid_request_response("Review empty")
 
     result = execute_data_post(http, f"/create_review", {
         "listingId": listing_id,
-        "review": review
+        "review": review,
+        "userId": creds
     })
 
     if result.status == 200:
         return make_ok_response()
+    if result.status == 404:
+        return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
 
 
 def update_user_by_id(http, auth_token, user_id, address):

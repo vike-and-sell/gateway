@@ -18,7 +18,7 @@ def get_rating(listing_id):
 @rating_bp.post('/<int:listing_id>')
 def create_rating(listing_id):
     auth_token = request.cookies.get("Authorization")
-    rating = request.json
+    rating = request.json.get('rating')
     result = gateway.post_rating_by_listing_id(
         http, auth_token, listing_id, rating)
     return make_response(result)
