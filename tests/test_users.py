@@ -7,41 +7,42 @@ import datetime
 import gateway
 
 
-# def test_get_user_by_id_success_path():
-#     http = mock(urllib3.PoolManager())
+def test_get_user_by_id_success_path():
+    http = mock(urllib3.PoolManager())
 
-#     response = mock({
-#         "status": 200,
-#     })
-#     when(response).json().thenReturn({
-#         "username": "bob1",
-#         "email": "bob1@uvic.ca",
-#         "location": "12.3456,78.9012",
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         # jan 1, 2000 12am GMT
-#         "joining_date": datetime.datetime.fromisoformat("2000-01-01T00:00:00Z"),
-#         "items_sold": [12345, 67890],
-#         "items_purchased": [56789, 98765],
-#     })
-#     when(http).request("GET", f"http://{DATA_URL}/get_user?userId=5678", json=None, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 1234
-#     })
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn({
+        "username": "bob1",
+        "email": "bob1@uvic.ca",
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        # jan 1, 2000 12am GMT
+        "joining_date": "2000-01-01T00:00:00+00:00",
+        "items_sold": [12345, 67890],
+        "items_purchased": [56789, 98765],
+    })
+    when(http).request("GET", f"http://{DATA_URL}/get_user?userId=5678", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 1234
+    })
 
-#     expected = {
-#         "statusCode": 200,
-#         "body": json.dumps({
-#             "username": "bob1",
-#             "location": "V8W",
-#             "joiningDate": "2000-01-01T00:00:00+00:00",
-#             "itemsSold": ["12345", "67890"],
-#             "itemsPurchased": ["56789", "98765"],
-#         })
-#     }
-#     actual = gateway.get_user_by_id(http, token, 5678)
-#     assert expected == actual
+    expected = {
+        "statusCode": 200,
+        "body": json.dumps({
+            "userId": 5678,
+            "username": "bob1",
+            "location": "V8W",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
+            "itemsSold": ["12345", "67890"],
+            "itemsPurchased": ["56789", "98765"],
+        })
+    }
+    actual = gateway.get_user_by_id(http, token, 5678)
+    assert expected == actual
 
 
 def test_get_user_by_id_does_not_exist():
@@ -79,50 +80,50 @@ def test_get_user_by_id_no_creds():
     assert expected == actual
 
 
-# def test_update_user_by_id_success_path():
-#     address = "500 Fort St, Victoria, BC V8W 1E5"
+def test_update_user_by_id_success_path():
+    address = "500 Fort St, Victoria, BC V8W 1E5"
 
-#     http = mock(urllib3.PoolManager())
+    http = mock(urllib3.PoolManager())
 
-#     geocode_response = mock({
-#         "status": 200,
-#     })
-#     when(geocode_response).json().thenReturn({
-#         "results": [
-#             {
-#                 "position": {
-#                     "lat": 123,
-#                     "lon": 456,
-#                 }
-#             }
-#         ]
-#     })
-#     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
-#                        .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
+    geocode_response = mock({
+        "status": 200,
+    })
+    when(geocode_response).json().thenReturn({
+        "results": [
+            {
+                "position": {
+                    "lat": 123,
+                    "lon": 456,
+                }
+            }
+        ]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
 
-#     response = mock({
-#         "status": 200,
-#     })
-#     when(http).request("POST", f"http://{DATA_URL}/update_user", json={
-#         "userId": 5678,
-#         "address": address,
-#         "location": {
-#             "lat": 123,
-#             "lng": 456
-#         }
-#     }, headers={
-#         "X-Api-Key": DATA_API_KEY
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 5678
-#     })
+    response = mock({
+        "status": 200,
+    })
+    when(http).request("POST", f"http://{DATA_URL}/update_user", json={
+        "userId": 5678,
+        "address": address,
+        "location": {
+            "lat": 123,
+            "lng": 456
+        }
+    }, headers={
+        "X-Api-Key": DATA_API_KEY
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
 
-#     expected = {
-#         "statusCode": 200,
-#     }
-#     actual = gateway.update_user_by_id(
-#         http, token, 5678, "500 Fort St, Victoria, BC V8W 1E5")
-#     assert expected == actual
+    expected = {
+        "statusCode": 200,
+    }
+    actual = gateway.update_user_by_id(
+        http, token, 5678, "500 Fort St, Victoria, BC V8W 1E5")
+    assert expected == actual
 
 
 def test_update_user_by_id_wrong_token_uid():
@@ -172,41 +173,41 @@ def test_update_user_by_id_invalid_address():
     assert expected == actual
 
 
-# def test_get_user_by_me_success_path():
-#     http = mock(urllib3.PoolManager())
+def test_get_user_by_me_success_path():
+    http = mock(urllib3.PoolManager())
 
-#     response = mock({
-#         "status": 200,
-#     })
-#     when(response).json().thenReturn({
-#         "username": "bob1",
-#         "email": "bob1@uvic.ca",
-#         "location": "12.3456,78.9012",
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         # jan 1, 2000 12am GMT
-#         "joining_date": datetime.datetime.fromisoformat("2000-01-01T00:00:00Z"),
-#         "items_sold": [12345, 67890],
-#         "items_purchased": [56789, 98765],
-#     })
-#     when(http).request("GET", f"http://{DATA_URL}/get_user?userId=5678", json=None, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 5678
-#     })
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn({
+        "username": "bob1",
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        # jan 1, 2000 12am GMT
+        "joining_date": "2000-01-01T00:00:00+00:00",
+        "items_sold": [12345, 67890],
+        "items_purchased": [56789, 98765],
+    })
+    when(http).request("GET", f"http://{DATA_URL}/get_user?userId=5678", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
 
-#     expected = {
-#         "statusCode": 200,
-#         "body": json.dumps({
-#             "username": "bob1",
-#             "location": "V8W",
-#             "joiningDate": "2000-01-01T00:00:00+00:00",
-#             "itemsSold": ["12345", "67890"],
-#             "itemsPurchased": ["56789", "98765"],
-#         })
-#     }
-#     actual = gateway.get_user_by_auth_token(http, token)
-#     assert expected == actual
+    expected = {
+        "statusCode": 200,
+        "body": json.dumps({
+            "userId": 5678,
+            "username": "bob1",
+            "location": "V8W",
+            "joiningDate": "2000-01-01T00:00:00+00:00",
+            "itemsSold": ["12345", "67890"],
+            "itemsPurchased": ["56789", "98765"],
+        })
+    }
+    actual = gateway.get_user_by_auth_token(http, token)
+    assert expected == actual
 
 
 def test_get_user_by_me_invalid_creds():
@@ -223,28 +224,30 @@ def test_get_user_by_me_invalid_creds():
     assert expected == actual
 
 
-# def test_get_user_search_history_success_path():
-#     http = mock(urllib3.PoolManager())
+def test_get_user_search_history_success_path():
+    http = mock(urllib3.PoolManager())
 
-#     response = mock({
-#         "status": 200,
-#     })
-#     when(response).json().thenReturn({
-#         "searches": ["bike", "car", "textbook"]
-#     })
-#     when(http).request("GET", f"http://{DATA_URL}/get_search_history?userId=5678", json=None, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 5678
-#     })
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn([
+        { 'search_date': '2024-01-01T00:00:00', 'search_text': "bike" },
+        { 'search_date': '2024-01-01T00:00:00', 'search_text':"car" },
+        { 'search_date': '2024-01-01T00:00:00', 'search_text': "textbook" }
+    ])
+    when(http).request("GET", f"http://{DATA_URL}/get_search_history?userId=5678", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
 
-#     expected = {
-#         "statusCode": 200,
-#         "body": json.dumps(["bike", "car", "textbook"])
-#     }
-#     actual = gateway.get_search_history_by_id(http, token, 5678)
-#     assert expected == actual
+    expected = {
+        "statusCode": 200,
+        "body": json.dumps(["bike", "car", "textbook"])
+    }
+    actual = gateway.get_search_history_by_id(http, token, 5678)
+    assert expected == actual
 
 
 def test_get_user_by_me_invalid_creds():
