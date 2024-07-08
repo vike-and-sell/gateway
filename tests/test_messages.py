@@ -7,31 +7,31 @@ import datetime
 import gateway
 
 
-# def test_get_all_chats_success_path():
-#     http = mock(urllib3.PoolManager())
+def test_get_all_chats_success_path():
+    http = mock(urllib3.PoolManager())
 
-#     response = mock({
-#         "status": 200,
-#     })
-#     when(response).json().thenReturn({
-#         "chats": [
-#             1234, 5678, 9012
-#         ]})
-#     when(http).request("GET", f"http://{DATA_URL}/get_chats?userId=1234", json=None, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 1234
-#     })
+    response = mock({
+        "status": 200,
+    })
+    when(response).json().thenReturn(
+        [
+            1234, 5678, 9012
+        ])
+    when(http).request("GET", f"http://{DATA_URL}/get_chats?userId=1234", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 1234
+    })
 
-#     expected = {
-#         "statusCode": 200,
-#         "body": json.dumps([
-#             "1234", "5678", "9012"
-#         ])
-#     }
-#     actual = gateway.get_chats(http, token)
-#     assert expected == actual
+    expected = {
+        "statusCode": 200,
+        "body": json.dumps([
+            "1234", "5678", "9012"
+        ])
+    }
+    actual = gateway.get_chats(http, token)
+    assert expected == actual
 
 
 def test_get_all_chats_invalid_token():
@@ -77,19 +77,20 @@ def test_get_messages_success_path():
     response = mock({
         "status": 200,
     })
-    when(response).json().thenReturn({
-        "messages": [{
-            "messageId": 1234,
-            "sender": 5678,
-            "content": "Hello, World!",
-            "timestamp": "2000-01-01T00:00:00+00:00"
-        }, {
-            "messageId": 3456,
-            "sender": 7890,
-            "content": "Goodbye, World!",
-            "timestamp": "2000-01-01T00:00:00+00:00"
+    when(response).json().thenReturn(
+        [{
+            "message_id": 1234,
+            "sender_id": 5678,
+            "message_content": "Hello, World!",
+            "created_on": "2000-01-01T00:00:00+00:00"
         }
-        ]})
+        ,{
+            "message_id": 3456,
+            "sender_id": 7890,
+            "message_content": "Goodbye, World!",
+            "created_on": "2100-01-01T00:00:00+00:00"
+        }
+        ])
     when(http).request("GET", f"http://{DATA_URL}/get_messages?chatId=1234", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -99,7 +100,7 @@ def test_get_messages_success_path():
 
     expected = {
         "statusCode": 200,
-        "body": json.dumps({
+        "body": json.dumps( {
             "messages": [
                 {
                     "messageId": "1234",
@@ -114,7 +115,9 @@ def test_get_messages_success_path():
                     "timestamp": "2100-01-01T00:00:00+00:00"
                 }
             ]
-        })
+        }
+                
+        )
     }
 
     actual = gateway.get_messages(http, token, 1234)
