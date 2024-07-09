@@ -1,4 +1,4 @@
-from mockito import when, mock, verify
+from mockito import when, mock, ANY
 import urllib3
 import json
 from test_utils import sign_jwt_for_test, DATA_API_KEY, MAPS_API_KEY
@@ -11,13 +11,10 @@ import gateway
 def test_request_account():
     email = "test@uvic.ca"
     callback = "http://callback"
-    response = mock({
-        "status": 200,
-    })
-
-    when(response).json().thenReturn()
+    smtp = mock({})
+    when(smtp).send_mail(ANY, ANY, ANY).thenReturn()
     expected = {"statusCode": 200}
-    actual = gateway.request_account(email, callback)
+    actual = gateway.request_account(smtp, email, callback)
     assert actual == expected
 
 
@@ -343,13 +340,10 @@ def test_request_reset():
     email = "test@uvic.ca"
     callback = "http://callback"
 
-    response = mock({
-        "status": 200,
-    })
-
-    when(response).json().thenReturn()
+    smtp = mock({})
+    when(smtp).send_mail(ANY, ANY, ANY).thenReturn()
     expected = {"statusCode": 200}
-    actual = gateway.request_account(email, callback)
+    actual = gateway.request_account(smtp, email, callback)
     assert actual == expected
 
 
@@ -357,21 +351,15 @@ def test_request_reset_invalid_email():
     email = "test"
     callback = "http://callback"
 
-    response = mock({
-        "status": 400,
-        "body": json.dumps({
-            "message": ""
-        })
-    })
-
-    when(response).json().thenReturn()
+    smtp = mock({})
+    when(smtp).send_mail(ANY, ANY, ANY).thenReturn()
     expected = {
         "statusCode": 400,
         "body": json.dumps({
             "message": ""
         })
     }
-    actual = gateway.request_account(email, callback)
+    actual = gateway.request_account(smtp, email, callback)
     assert actual == expected
 
 
