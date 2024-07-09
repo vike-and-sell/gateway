@@ -7,6 +7,7 @@ from freezegun import freeze_time
 
 import gateway
 
+
 def test_request_account():
     email = "test@uvic.ca"
     callback = "http://callback"
@@ -18,7 +19,7 @@ def test_request_account():
     expected = {"statusCode": 200}
     actual = gateway.request_account(email, callback)
     assert actual == expected
-    
+
 
 def test_verify_account():
     with freeze_time("2024-06-29T17:45:28"):
@@ -52,15 +53,14 @@ def test_verify_account():
         })
 
         when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
-                .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
-        
-        
+                           .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
+
         when(http).request("POST", "http://test/make_user", json={
-            "email": "test@uvic.ca", 
-            "username": username, 
-            "password": "02f51e9851b626f8a400c90d297141fecc50aa4b105f72b097126fd9949fa9ce", 
-            "address": address, 
-            "location": {"lat": 123, "lng": 456}, 
+            "email": "test@uvic.ca",
+            "username": username,
+            "password": "02f51e9851b626f8a400c90d297141fecc50aa4b105f72b097126fd9949fa9ce",
+            "address": address,
+            "location": {"lat": 123, "lng": 456},
             "join_date": datetime.datetime.now(datetime.UTC).isoformat()
         }, headers={
             "X-Api-Key": DATA_API_KEY
@@ -89,11 +89,11 @@ def test_verify_account():
                 })
             }
         }
-        
 
-        actual = gateway.verify_account(http, token, username, password, address)
+        actual = gateway.verify_account(
+            http, token, username, password, address)
         assert expected == actual
-        
+
 
 def test_verify_account_invalid_username():
     http = mock(urllib3.PoolManager())
@@ -132,7 +132,7 @@ def test_verify_account_invalid_username():
 
     actual = gateway.verify_account(http, token, username, password, address)
     assert expected == actual
-    
+
 
 def test_verify_account_invalid_email():
     http = mock(urllib3.PoolManager())
@@ -171,7 +171,7 @@ def test_verify_account_invalid_email():
 
     actual = gateway.verify_account(http, token, username, password, address)
     assert expected == actual
-    
+
 
 def test_verify_account_invalid_password():
     http = mock(urllib3.PoolManager())
@@ -210,7 +210,7 @@ def test_verify_account_invalid_password():
 
     actual = gateway.verify_account(http, token, username, password, address)
     assert expected == actual
-    
+
 
 def test_login():
     with freeze_time("2024-06-29T17:45:28"):
@@ -238,9 +238,9 @@ def test_login():
         })
 
         when(http).request("GET", "http://test/get_user_info_for_login?usr=john_doe", json=None,
-        headers={
-            "X-Api-Key": DATA_API_KEY,
-        }).thenReturn(getinforesponse)
+                           headers={
+                               "X-Api-Key": DATA_API_KEY,
+                           }).thenReturn(getinforesponse)
 
         when(http).request("POST", "http://test/login", body={
             "username": username,
@@ -261,9 +261,9 @@ def test_login():
             }
         }
 
-        actual  = gateway.login(http, username, password)
+        actual = gateway.login(http, username, password)
         assert actual == expected
-        
+
 
 def test_login_user_not_exists():
     http = mock(urllib3.PoolManager())
@@ -280,9 +280,9 @@ def test_login_user_not_exists():
     when(response).json().thenReturn()
 
     when(http).request("GET", "http://test/get_user_info_for_login?usr=test_user", json=None,
-    headers={
-        "X-Api-Key": DATA_API_KEY,
-    }).thenReturn(response)
+                       headers={
+                           "X-Api-Key": DATA_API_KEY,
+                       }).thenReturn(response)
 
     when(http).request("POST", "http://test/login", body={
         "username": username,
@@ -298,9 +298,9 @@ def test_login_user_not_exists():
         })
     }
 
-    actual  = gateway.login(http, username, password)
+    actual = gateway.login(http, username, password)
     assert actual == expected
-    
+
 
 def test_login_incorrect_password():
     http = mock(urllib3.PoolManager())
@@ -317,9 +317,9 @@ def test_login_incorrect_password():
     when(response).json().thenReturn()
 
     when(http).request("GET", "http://test/get_user_info_for_login?usr=john_doe", json=None,
-    headers={
-        "X-Api-Key": DATA_API_KEY,
-    }).thenReturn(response)
+                       headers={
+                           "X-Api-Key": DATA_API_KEY,
+                       }).thenReturn(response)
 
     when(http).request("POST", "http://test/login", body={
         "username": username,
@@ -335,9 +335,9 @@ def test_login_incorrect_password():
         })
     }
 
-    actual  = gateway.login(http, username, password)
+    actual = gateway.login(http, username, password)
     assert actual == expected
-    
+
 
 def test_request_reset():
     email = "test@uvic.ca"
@@ -351,7 +351,6 @@ def test_request_reset():
     expected = {"statusCode": 200}
     actual = gateway.request_account(email, callback)
     assert actual == expected
-    
 
 
 def test_request_reset_invalid_email():
@@ -374,7 +373,7 @@ def test_request_reset_invalid_email():
     }
     actual = gateway.request_account(email, callback)
     assert actual == expected
-    
+
 
 def test_verify_reset():
     http = mock(urllib3.PoolManager())
@@ -400,9 +399,9 @@ def test_verify_reset():
         "username": "john_doe"
     })
     when(http).request("GET", "http://test/get_user_by_email?eml=john_doe@uvic.ca", json=None,
-    headers={
-        "X-Api-Key": DATA_API_KEY,
-    }).thenReturn(emlresponse)
+                       headers={
+                           "X-Api-Key": DATA_API_KEY,
+                       }).thenReturn(emlresponse)
 
     when(http).request("POST", "http://test/update_user_password", json={
         "user_id": 1234,
@@ -422,7 +421,7 @@ def test_verify_reset():
 
     actual = gateway.verify_reset(http, token, password)
     assert actual == expected
-    
+
 
 def test_verify_reset_invalid_email():
     http = mock(urllib3.PoolManager())
@@ -444,9 +443,9 @@ def test_verify_reset_invalid_email():
         "username": "john_doe"
     })
     when(http).request("GET", "http://test/get_user_by_email?eml=test", json=None,
-    headers={
-        "X-Api-Key": DATA_API_KEY,
-    }).thenReturn(emlresponse)
+                       headers={
+                           "X-Api-Key": DATA_API_KEY,
+                       }).thenReturn(emlresponse)
 
     when(http).request("POST", "http://test/update_user_password", json={
         "user_id": 1234,

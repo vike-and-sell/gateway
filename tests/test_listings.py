@@ -5,97 +5,112 @@ from test_utils import DATA_URL, sign_jwt_for_test, DATA_API_KEY
 import json
 import gateway
 
-# def test_create_listing_success():
-#     address = "500 Fort St, Victoria, BC V8W 1E5"
-#     listing_data = {        
-#         "title": "Chair",
-#         "price": 100.00,
-#         "latitiude": 12.3456,
-#         "longitude": 78.9012, 
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         "status": "AVAILABLE",}
-    
-#     http = mock(urllib3.PoolManager())
 
-#     mockGeo = mock(urllib3.HTTPResponse)
-#     mockGeo.status = 200
-#     when(mockGeo).json().thenReturn({
-#         "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
-#     })
+def test_create_listing_success():
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+    listing_data = {
+        "title": "Chair",
+        "price": 100.00,
+        "latitude": 12.3456,
+        "longitude": 78.9012,
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE", }
 
-#     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
-#             .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+    http = mock(urllib3.PoolManager())
 
-#     response = mock({
-#         "status": 201,
-#     })
-#     when(response).json().thenReturn({
-#         "listingId": 1234,
-#     })
-#     when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
-#         "sellerId": 5678,
-#         "title": "Chair",
-#         "price": 100.00,
-#         "latitiude": 12.3456,
-#         "longitude": 78.9012, 
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         "status": "AVAILABLE",
-    
-#     }, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 5678
-#     })
-#     expected = {
-#         "statusCode": 201,
-#         "body": json.dumps({
-#             "listingId": 1234,
-#         })
-#     }
-#     actual = gateway.create_listing(http, token, listing_data)
-#     assert expected == actual
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
 
-# def test_create_listing_fail():
-#     http = mock(urllib3.PoolManager())
+    response = mock({
+        "status": 201,
+    })
+    when(response).json().thenReturn({
+        "listingId": 1234,
+    })
+    when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
+        "sellerId": 5678,
+        "title": "Chair",
+        "price": 100.00,
+        "latitude": 12.3456,
+        "longitude": 78.9012,
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
 
-#     response = mock({
-#         "status": 400,
-#     })
-    
-#     when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
-#         "sellerId": 5678,
-#         "title": "",
-#         "price": 100.00,
-#         "location": "12.3456,78.9012",
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         "status": "AVAILABLE",
-    
-#     }, headers={
-#         "X-Api-Key": DATA_API_KEY,
-#     }).thenReturn(response)
-#     token = sign_jwt_for_test({
-#         "uid": 5678
-#     })
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 201,
+        "body": json.dumps({
+            "listingId": 1234,
+        })
+    }
+    actual = gateway.create_listing(http, token, listing_data)
+    assert expected == actual
 
-#     expected = {
-#         "statusCode": 400,
-#         "body": json.dumps({
-#             "message": "Invalid request"
-#         }),
-#     }
 
-#     actual = gateway.create_listing(http, token, {
-#         "title": "",
-#         "price": 100.00,
-#         "location": "12.3456,78.9012",
-#         "address": "500 Fort St, Victoria, BC V8W 1E5",
-#         "status": "AVAILABLE",
-#     })
-#     assert expected == actual
+def test_create_listing_fail():
+    http = mock(urllib3.PoolManager())
+
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+
+    response = mock({
+        "status": 400,
+    })
+
+    when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
+        "sellerId": 5678,
+        "title": "",
+        "price": 100.00,
+        "latitude": 12.3456,
+        "longitude": 78.9012,
+        "address": address,
+        "status": "AVAILABLE",
+
+    }, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(response)
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": "Invalid request"
+        }),
+    }
+
+    actual = gateway.create_listing(http, token, {
+        "title": "",
+        "price": 100.00,
+        "location": "12.3456,78.9012",
+        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "status": "AVAILABLE",
+    })
+    assert expected == actual
+
 
 def test_patch_listing_success():
-    updated_listing_data = {        
+    updated_listing_data = {
         "sellerId": 5678,
         "title": "Table",
         "price": 10.00,
@@ -122,7 +137,7 @@ def test_patch_listing_success():
         "address": "500 Fort St, Victoria, BC V8W 1E5",
         "status": "AVAILABLE",
         "listingId": 1111,
-    
+
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -135,9 +150,10 @@ def test_patch_listing_success():
     actual = gateway.update_listing(http, token, 1111, updated_listing_data)
     assert expected == actual
 
+
 def test_patch_listing_fail():
-    updated_listing_data = { 
-        "sellerId": 5678,  
+    updated_listing_data = {
+        "sellerId": 5678,
         "title": "",
         "price": 10.00,
         "location": "12.3456,78.9012",
@@ -160,7 +176,7 @@ def test_patch_listing_fail():
         "address": "500 Fort St, Victoria, BC V8W 1E5",
         "status": "AVAILABLE",
         "listingId": 1111,
-    
+
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -175,6 +191,7 @@ def test_patch_listing_fail():
     }
     actual = gateway.update_listing(http, token, 1111, updated_listing_data)
     assert expected == actual
+
 
 def test_delete_listing_success():
     http = mock(urllib3.PoolManager())
@@ -192,6 +209,7 @@ def test_delete_listing_success():
     }
     actual = gateway.delete_listing(http, token, 1111)
     assert expected == actual
+
 
 def test_delete_listing_fail():
     http = mock(urllib3.PoolManager())
@@ -213,6 +231,7 @@ def test_delete_listing_fail():
     actual = gateway.delete_listing(http, token, 1111)
     assert expected == actual
 
+
 def test_get_sorted_listings_success():
     keywords = "status=AVAILABLE"
 
@@ -222,26 +241,26 @@ def test_get_sorted_listings_success():
     })
     when(response).json().thenReturn([
         {
-        "sellerId": 3333,
-        "listingId": 1111,
-        "title": "Chair",
-        "price": 100.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-        "listedAt": "2021-01-01T00:00:00Z",
-        "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "12.3456,78.9012",
+            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
         {
-        "sellerId": 3333,
-        "listingId": 1111,
-        "title": "Chair",
-        "price": 100.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-        "listedAt": "2021-01-01T00:00:00Z",
-        "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "12.3456,78.9012",
+            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
 
     ])
@@ -255,29 +274,30 @@ def test_get_sorted_listings_success():
         "statusCode": 200,
         "body": json.dumps([
             {
-            "sellerId": 3333,
-            "listingId": 1111,
-            "title": "Chair",
-            "price": 100.00,
-            "location": "V8W",
-            "status": "AVAILABLE",
-            "listedAt": "2021-01-01T00:00:00Z",
-            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+                "sellerId": 3333,
+                "listingId": 1111,
+                "title": "Chair",
+                "price": 100.00,
+                "location": "V8W",
+                "status": "AVAILABLE",
+                "listedAt": "2021-01-01T00:00:00Z",
+                "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
             {
-            "sellerId": 3333,
-            "listingId": 1111,
-            "title": "Chair",
-            "price": 100.00,
-            "location": "V8W",
-            "status": "AVAILABLE",
-            "listedAt": "2021-01-01T00:00:00Z",
-            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+                "sellerId": 3333,
+                "listingId": 1111,
+                "title": "Chair",
+                "price": 100.00,
+                "location": "V8W",
+                "status": "AVAILABLE",
+                "listedAt": "2021-01-01T00:00:00Z",
+                "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
         ])
     }
     actual = gateway.get_sorted_listings(http, token, keywords)
     assert expected == actual
+
 
 def test_get_sorted_listings_fail():
     keywords = "status=AVAILABLE"
@@ -300,6 +320,7 @@ def test_get_sorted_listings_fail():
     }
     actual = gateway.get_sorted_listings(http, token, keywords)
     assert expected == actual
+
 
 def test_get_listing_by_id_success():
     http = mock(urllib3.PoolManager())
@@ -339,6 +360,7 @@ def test_get_listing_by_id_success():
     actual = gateway.get_listing_by_id(http, token, 1111)
     assert expected == actual
 
+
 def test_get_listing_by_id_fail():
     http = mock(urllib3.PoolManager())
     response = mock({
@@ -359,6 +381,7 @@ def test_get_listing_by_id_fail():
     actual = gateway.get_listing_by_id(http, token, 1234)
     assert expected == actual
 
+
 def test_get_my_listings_success():
     http = mock(urllib3.PoolManager())
     response = mock({
@@ -366,26 +389,26 @@ def test_get_my_listings_success():
     })
     when(response).json().thenReturn([
         {
-        "sellerId": 3333,
-        "listingId": 1111,
-        "title": "Chair",
-        "price": 100.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-        "listedAt": "2021-01-01T00:00:00Z",
-        "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "12.3456,78.9012",
+            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
         {
-        "sellerId": 3333,
-        "listingId": 1111,
-        "title": "Chair",
-        "price": 100.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-        "listedAt": "2021-01-01T00:00:00Z",
-        "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "sellerId": 3333,
+            "listingId": 1111,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "12.3456,78.9012",
+            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "status": "AVAILABLE",
+            "listedAt": "2021-01-01T00:00:00Z",
+            "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
 
     ])
@@ -399,29 +422,30 @@ def test_get_my_listings_success():
         "statusCode": 200,
         "body": json.dumps([
             {
-            "sellerId": 3333,
-            "listingId": 1111,
-            "title": "Chair",
-            "price": 100.00,
-            "location": "V8W",
-            "status": "AVAILABLE",
-            "listedAt": "2021-01-01T00:00:00Z",
-            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+                "sellerId": 3333,
+                "listingId": 1111,
+                "title": "Chair",
+                "price": 100.00,
+                "location": "V8W",
+                "status": "AVAILABLE",
+                "listedAt": "2021-01-01T00:00:00Z",
+                "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
             {
-            "sellerId": 3333,
-            "listingId": 1111,
-            "title": "Chair",
-            "price": 100.00,
-            "location": "V8W",
-            "status": "AVAILABLE",
-            "listedAt": "2021-01-01T00:00:00Z",
-            "lastUpdatedAt": "2021-01-01T00:00:00Z",
+                "sellerId": 3333,
+                "listingId": 1111,
+                "title": "Chair",
+                "price": 100.00,
+                "location": "V8W",
+                "status": "AVAILABLE",
+                "listedAt": "2021-01-01T00:00:00Z",
+                "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
         ])
     }
     actual = gateway.get_my_listings(http, token)
     assert expected == actual
+
 
 def test_get_my_listings_auth_fail():
     http = mock(urllib3.PoolManager())
@@ -432,4 +456,3 @@ def test_get_my_listings_auth_fail():
 
     actual = gateway.get_my_listings(http, None)
     assert expected == actual
-
