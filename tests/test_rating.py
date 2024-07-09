@@ -7,6 +7,7 @@ from test_utils import DATA_URL, sign_jwt_for_test, DATA_API_KEY
 
 import gateway
 
+
 @pytest.fixture(scope='module', autouse=True)
 def setup_module():
     http = mock(urllib3.PoolManager())
@@ -14,6 +15,7 @@ def setup_module():
         "uid": 1234
     })
     return http, token
+
 
 def test_get_ratings_success(setup_module):
     http, token = setup_module
@@ -23,14 +25,14 @@ def test_get_ratings_success(setup_module):
     })
     when(response).json().thenReturn([
         {
-        "username": "bob1",
-        "created_on": datetime.datetime.fromisoformat("2001-01-01T00:00:00Z"),
-        "rating": 3
+            "username": "bob1",
+            "created_on": "2001-01-01T00:00:00+00:00",
+            "rating": 3
         },
         {
-        "username": "bob2",
-        "created_on": datetime.datetime.fromisoformat("2003-01-11T00:00:00Z"),
-        "rating": 4
+            "username": "bob2",
+            "created_on": "2003-01-11T00:00:00+00:00",
+            "rating": 4
         },
     ])
 
@@ -40,21 +42,22 @@ def test_get_ratings_success(setup_module):
 
     expected = {
         "statusCode": 200,
-        "body":json.dumps([
+        "body": json.dumps([
             {
-            "username": "bob1",
-            "created_on": "2001-01-01T00:00:00+00:00",
-            "rating": 3
+                "username": "bob1",
+                "created_on": "2001-01-01T00:00:00+00:00",
+                "rating": 3
             },
             {
-            "username": "bob2",
-            "created_on": "2003-01-11T00:00:00+00:00",
-            "rating": 4
+                "username": "bob2",
+                "created_on": "2003-01-11T00:00:00+00:00",
+                "rating": 4
             },
         ])
     }
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
     assert expected == actual
+
 
 def test_get_ratings_does_not_exist(setup_module):
     http, token = setup_module
@@ -72,9 +75,10 @@ def test_get_ratings_does_not_exist(setup_module):
             "message": "Listing not found"
         })
     }
-    
+
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
     assert expected == actual
+
 
 def test_get_ratings_unauthorized(setup_module):
     http, _ = setup_module
@@ -85,8 +89,10 @@ def test_get_ratings_unauthorized(setup_module):
     actual = gateway.get_ratings_by_listing_id(http, None, 5678)
     assert expected == actual
 
-    actual = gateway.get_ratings_by_listing_id(http, sign_jwt_for_test({}), 5678)
+    actual = gateway.get_ratings_by_listing_id(
+        http, sign_jwt_for_test({}), 5678)
     assert expected == actual
+
 
 def test_get_ratings_invalid_type(setup_module):
     http, token = setup_module
@@ -94,7 +100,7 @@ def test_get_ratings_invalid_type(setup_module):
     expected = {
         "statusCode": 400,
         "body": json.dumps({
-            "message": "Invalid arg types"
+            "message": "Invalid args"
         })
     }
 
@@ -102,6 +108,7 @@ def test_get_ratings_invalid_type(setup_module):
     assert expected == actual
     actual = gateway.get_ratings_by_listing_id(http, token, [1, 2, 3, 4])
     assert expected == actual
+
 
 def test_post_rating_success(setup_module):
     http, token = setup_module
@@ -114,7 +121,8 @@ def test_post_rating_success(setup_module):
 
     when(http).request("POST", f"http://{DATA_URL}/create_rating", json={
         "listingId": listing_id,
-        "rating": rating
+        "rating": rating,
+        "userId": 1234
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -124,6 +132,7 @@ def test_post_rating_success(setup_module):
     }
     actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual
+
 
 def test_post_listing_not_found(setup_module):
     http, token = setup_module
@@ -136,7 +145,8 @@ def test_post_listing_not_found(setup_module):
 
     when(http).request("POST", f"http://{DATA_URL}/create_rating", json={
         "listingId": listing_id,
-        "rating": rating
+        "rating": rating,
+        "userId": 1234,
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -149,6 +159,7 @@ def test_post_listing_not_found(setup_module):
     }
     actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual
+
 
 def test_post_listing_illegal_rating(setup_module):
     http, token = setup_module
@@ -164,13 +175,14 @@ def test_post_listing_illegal_rating(setup_module):
     actual = gateway.post_rating_by_listing_id(http, token, 5678, 6)
     assert expected == actual
 
-def test_get_ratings_invalid_type(setup_module):
+
+def test_post_rating_invalid_type(setup_module):
     http, token = setup_module
 
     expected = {
         "statusCode": 400,
         "body": json.dumps({
-            "message": "Invalid arg types"
+            "message": "Invalid args"
         })
     }
 

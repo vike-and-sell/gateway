@@ -8,14 +8,6 @@ import gateway
 
 def test_create_listing_success():
     address = "500 Fort St, Victoria, BC V8W 1E5"
-    listing_data = {
-        "title": "Chair",
-        "price": 100.00,
-        "latitude": 12.3456,
-        "longitude": 78.9012,
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE", }
-
     http = mock(urllib3.PoolManager())
 
     mockGeo = mock({
@@ -54,7 +46,7 @@ def test_create_listing_success():
             "listingId": 1234,
         })
     }
-    actual = gateway.create_listing(http, token, listing_data)
+    actual = gateway.create_listing(http, token, "Chair", 100.00, address)
     assert expected == actual
 
 
@@ -99,44 +91,37 @@ def test_create_listing_fail():
         }),
     }
 
-    actual = gateway.create_listing(http, token, {
-        "title": "",
-        "price": 100.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-    })
+    actual = gateway.create_listing(http, token, "", 100.00, address)
     assert expected == actual
 
 
 def test_patch_listing_success():
-    updated_listing_data = {
-        "sellerId": 5678,
-        "title": "Table",
-        "price": 10.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-    }
-
     http = mock(urllib3.PoolManager())
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+
     response = mock({
         "status": 200,
     })
     when(response).json().thenReturn({
         "listingId": 1234,
     })
-
-# update so that listingId is part of the updated listing data
-
     when(http).request("POST", f"http://{DATA_URL}/update_listing", json={
-        "sellerId": 5678,
+        "listingId": 1111,
         "title": "Table",
         "price": 10.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "latitude": 12.3456,
+        "longitude": 78.9012,
+        "address": address,
         "status": "AVAILABLE",
-        "listingId": 1111,
 
     }, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -147,36 +132,35 @@ def test_patch_listing_success():
     expected = {
         "statusCode": 200,
     }
-    actual = gateway.update_listing(http, token, 1111, updated_listing_data)
+    actual = gateway.update_listing(
+        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE")
     assert expected == actual
 
 
 def test_patch_listing_fail():
-    updated_listing_data = {
-        "sellerId": 5678,
-        "title": "",
-        "price": 10.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
-        "status": "AVAILABLE",
-    }
-
     http = mock(urllib3.PoolManager())
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+
     response = mock({
         "status": 400,
     })
-
-# update so that listingId is part of the updated listing data
-
     when(http).request("POST", f"http://{DATA_URL}/update_listing", json={
-        "sellerId": 5678,
+        "listingId": 1111,
         "title": "",
         "price": 10.00,
-        "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "latitude": 12.3456,
+        "longitude": 78.9012,
+        "address": address,
         "status": "AVAILABLE",
-        "listingId": 1111,
-
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -189,7 +173,8 @@ def test_patch_listing_fail():
             "message": "Invalid request"
         }),
     }
-    actual = gateway.update_listing(http, token, 1111, updated_listing_data)
+    actual = gateway.update_listing(
+        http, token, 1111, "", 10.00, address, "AVAILABLE")
     assert expected == actual
 
 

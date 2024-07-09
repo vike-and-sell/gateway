@@ -526,6 +526,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     lat, lng = address_to_latlng(http, address)
 
     # TODO: only update fields that have changed?
+    # TODO: if status is being changed to SOLD, then the buyer username must also be included
     result = execute_data_post(
         http, f"/update_listing", {
             "listingId": listing_id,
