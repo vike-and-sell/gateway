@@ -607,6 +607,9 @@ def create_chat(http, auth_token, listingId):
     try:
         data = result.json()
         sellerId = data["sellerId"]
+        if creds == sellerId:
+            return make_invalid_request_response("You cannot chat with yourself")
+
         result = execute_data_post(http, "/create_chat", {
             "listingId": listingId,
             "sellerId": sellerId,
@@ -618,6 +621,9 @@ def create_chat(http, auth_token, listingId):
             return make_created_response(body={
                 "chatId": chatId
             })
+
+        if result.status == 409:
+            return make_invalid_request_response("Chat already exists for that listingId")
 
     except Exception as e:
         print(e)
