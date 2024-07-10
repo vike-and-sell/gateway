@@ -137,6 +137,10 @@ export class GatewayStack extends Stack {
         DATA_API_KEY: process.env.DATA_API_KEY ?? "",
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY ?? "",
         MAPS_API_KEY: process.env.MAPS_API_KEY ?? "",
+        SMTP_SERVER: process.env.SMTP_SERVER ?? "",
+        SMTP_PORT: process.env.SMTP_PORT ?? "",
+        SMTP_USERNAME: process.env.SMTP_USERNAME ?? "",
+        SMTP_PASSWORD: process.env.SMTP_PASSWORD ?? "",
       },
     });
 

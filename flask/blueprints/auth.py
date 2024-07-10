@@ -9,14 +9,19 @@ http = urllib3.PoolManager()
 
 auth_bp = Blueprint('auth', __name__)
 
+SMTP_USERNAME = os.environ["SMTP_USERNAME"]
+SMTP_PASSWORD = os.environ["SMTP_PASSWORD"]
+SMTP_SERVER = os.environ["SMTP_SERVER"]
+SMTP_PORT = int(os.environ["SMTP_PORT"])
+
 
 @auth_bp.post('/request_account')
 def request_account():
     body = request.get_json()
     email = body["email"]
     callback = body["callback"]
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login('vikeandsell@gmail.com', os.environ["GMAIL_APP_PASSWORD"])
+    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
         result = gateway.request_account(server, email, callback)
         return make_response(result)
 
@@ -46,8 +51,8 @@ def request_reset():
     body = request.get_json()
     email = body["email"]
     callback = body["callback"]
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login('vikeandsell@gmail.com', os.environ["GMAIL_APP_PASSWORD"])
+    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
         result = gateway.request_reset(server, email, callback)
         return make_response(result)
 
