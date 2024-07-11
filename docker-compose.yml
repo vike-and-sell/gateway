@@ -2,7 +2,9 @@ services:
   gateway:
     networks: 
       - vas
-    build: .
+    build:
+      context: .
+      dockerfile: flask/Dockerfile
     restart: always
     environment:
       DATA_URL: ${DATA_URL}
@@ -14,7 +16,7 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
     ports:
-      - 8080:8080
+      - 8080:8080   
 
 networks:
   vas:
