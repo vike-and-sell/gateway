@@ -4,7 +4,7 @@ services:
       - vas
     build:
       context: .
-      dockerfile: flask/Dockerfile
+      dockerfile: flask/Dockerfile-https
     restart: always
     environment:
       DATA_URL: ${DATA_URL}

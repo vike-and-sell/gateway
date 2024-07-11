@@ -1,0 +1,18 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN python3 -m venv env
+ENV PATH=/app/env/bin:$PATH
+
+RUN pip install -r requirements.txt
+
+COPY ./flask ./
+COPY gateway.py ./
+
+COPY fullchain.pem ./fullchain.pem
+COPY privkey.pem ./privkey.pem
+COPY cert.pem ./cert.pem
+
+CMD ["python3", "-u", "-m", "gunicorn", "--keyfile", "privkey.pem", "--certfile", "cert.pem", "--ca-certs", "fullchain.pem", "-b", "0.0.0.0:443", "app:app"]
