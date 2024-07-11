@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY flask/requirements.txt ./
+COPY requirements.txt ./
 RUN python3 -m venv env
 ENV PATH=/app/env/bin:$PATH
 
@@ -11,7 +11,6 @@ ENV DATA_API_KEY=testapikey
 ENV JWT_SECRET_KEY=testjwtsecret
 
 RUN pip install -r requirements.txt
-RUN pip install mockito pytest freezegun
 
 COPY ./tests/*.py ./
 COPY gateway.py ./

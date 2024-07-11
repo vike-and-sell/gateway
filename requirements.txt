@@ -4,3 +4,6 @@ flask-CORS
 pyjwt
 pyap
 urllib3
+mockito
+pytest
+freezegun
