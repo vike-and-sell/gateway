@@ -7,3 +7,4 @@ urllib3
 mockito
 pytest
 freezegun
+gunicorn
