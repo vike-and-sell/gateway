@@ -836,7 +836,8 @@ def ignore_listing(http: urllib3.PoolManager, auth_token, listingId):
             "listingId": listingId,
         })
         print(result.status)
-        if result.status == 200:
+        if result.status in [200, 409]:
+            # success if they have already ignored it
             return make_ok_response()
 
     return make_internal_error_response()
