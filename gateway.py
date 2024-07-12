@@ -125,7 +125,7 @@ def execute_data_request(http: urllib3.PoolManager, path, method, body):
     headers = {
         "X-Api-Key": DATA_API_KEY,
     }
-    return http.request(method, f"http://{DATA_URL}{path}", json=body, headers=headers)
+    return http.request(method, f"{DATA_URL}{path}", json=body, headers=headers)
 
 
 def execute_data_get(http, path):
@@ -154,8 +154,6 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             username = data["username"]
             full_address = data["address"]
             joining_date = data["joining_date"]
-            items_sold = data["items_sold"]
-            items_purchased = data["items_purchased"]
 
             print(type(joining_date))
             print('parsing address to postal code')
@@ -163,6 +161,24 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             safe_address = address_to_postal_code(full_address)
 
             print(f'safe address: {safe_address}')
+
+            items_sold = execute_data_get(http,
+                                          f"/get_user_sales?userId={user_id}")
+            if items_sold.status != 200:
+                print("could not get items sold by user {}, status: {}".format(
+                    user_id, items_sold.status))
+                items_sold = []
+            else:
+                items_sold = items_sold.json()
+
+            items_purchased = execute_data_get(http,
+                                               f"/get_user_purchases?userId={user_id}")
+            if items_purchased.status != 200:
+                print("could not get items purchased by user {}, status: {}".format(
+                    user_id, items_purchased.status))
+                items_purchased = []
+            else:
+                items_purchased = items_purchased.json()
 
             return make_ok_response(body={
                 "userId": user_id,
@@ -802,6 +818,28 @@ def get_recommendations(http, auth_token):
             make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("Listing not found")
+
+    return make_internal_error_response()
+
+
+def ignore_listing(http: urllib3.PoolManager, auth_token, listingId):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, f"/get_listing?listingId={listingId}")
+    print(result.status)
+    if result.status == 404:
+        return make_not_found_response()
+    elif result.status == 200:
+        result = execute_data_post(http, "/ignore_listing", {
+            "userId": creds,
+            "listingId": listingId,
+        })
+        print(result.status)
+        if result.status in [200, 409]:
+            # success if they have already ignored it
+            return make_ok_response()
 
     return make_internal_error_response()
 

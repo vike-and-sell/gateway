@@ -25,7 +25,7 @@ def test_create_listing_success():
     when(response).json().thenReturn({
         "listingId": 1234,
     })
-    when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
+    when(http).request("POST", f"{DATA_URL}/create_listing", json={
         "sellerId": 5678,
         "title": "Chair",
         "price": 100.00,
@@ -68,7 +68,7 @@ def test_create_listing_fail():
         "status": 400,
     })
 
-    when(http).request("POST", f"http://{DATA_URL}/create_listing", json={
+    when(http).request("POST", f"{DATA_URL}/create_listing", json={
         "sellerId": 5678,
         "title": "",
         "price": 100.00,
@@ -114,7 +114,7 @@ def test_patch_listing_success():
     when(response).json().thenReturn({
         "listingId": 1234,
     })
-    when(http).request("POST", f"http://{DATA_URL}/update_listing", json={
+    when(http).request("POST", f"{DATA_URL}/update_listing", json={
         "listingId": 1111,
         "title": "Table",
         "price": 10.00,
@@ -153,7 +153,7 @@ def test_patch_listing_fail():
     response = mock({
         "status": 400,
     })
-    when(http).request("POST", f"http://{DATA_URL}/update_listing", json={
+    when(http).request("POST", f"{DATA_URL}/update_listing", json={
         "listingId": 1111,
         "title": "",
         "price": 10.00,
@@ -183,7 +183,7 @@ def test_delete_listing_success():
     response = mock({
         "status": 200,
     })
-    when(http).request("DELETE", f"http://{DATA_URL}/delete_listing?listingId=1111", json=None, headers={
+    when(http).request("DELETE", f"{DATA_URL}/delete_listing?listingId=1111", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -201,7 +201,7 @@ def test_delete_listing_fail():
     response = mock({
         "status": 404,
     })
-    when(http).request("DELETE", f"http://{DATA_URL}/delete_listing?listingId=1111", json=None, headers={
+    when(http).request("DELETE", f"{DATA_URL}/delete_listing?listingId=1111", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -249,7 +249,7 @@ def test_get_sorted_listings_success():
         },
 
     ])
-    when(http).request("GET", f"http://{DATA_URL}/get_listings?status=AVAILABLE", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -291,7 +291,7 @@ def test_get_sorted_listings_fail():
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", f"http://{DATA_URL}/get_listings?status=AVAILABLE", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -323,7 +323,7 @@ def test_get_listing_by_id_success():
         "listedAt": "2021-01-01T00:00:00Z",
         "lastUpdatedAt": "2021-01-01T00:00:00Z",
     })
-    when(http).request("GET", f"http://{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -351,7 +351,7 @@ def test_get_listing_by_id_fail():
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", f"http://{DATA_URL}/get_listing?listingId=1234", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listing?listingId=1234", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -397,7 +397,7 @@ def test_get_my_listings_success():
         },
 
     ])
-    when(http).request("GET", f"http://{DATA_URL}/get_listing_by_seller?userId={5678}", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listing_by_seller?userId={5678}", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
