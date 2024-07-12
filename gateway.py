@@ -6,8 +6,6 @@ import re
 import jwt
 import jwt.exceptions
 import jwt.utils
-import pyap
-import pyap.address
 import urllib3
 import hashlib
 import smtplib
@@ -20,18 +18,6 @@ JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 
 
-def parse_address(address) -> pyap.address.Address:
-    parsed = pyap.parse(address, country="CA")
-
-    if len(parsed) == 0:
-        return None
-
-    if len(parsed[0].postal_code[0:3]) < 3:
-        return None
-
-    return parsed[0]
-
-
 def address_to_latlng(http, address):
     geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                                .format(MAPS_API_KEY, address))
@@ -39,19 +25,16 @@ def address_to_latlng(http, address):
     print(geocode_raw)
     if geocode_raw.status == 200:
         geocode = geocode_raw.json()
+        if len(geocode["results"]) == 0:
+            return None
         pos = geocode["results"][0]["position"]
         lat = pos["lat"]
         lng = pos["lon"]
-        return (lat, lng)
+        address = geocode["results"][0]["address"]
+        postal_code = address["postalCode"]
+        return (lat, lng, postal_code)
 
     return None
-
-
-def address_to_postal_code(address):
-    print(address)
-    parsed = pyap.parse(address, country="CA")
-    truncated_postal_code = parsed[0].postal_code[0:3]
-    return truncated_postal_code
 
 
 def resolve_credentials(auth_token: str):
@@ -151,15 +134,11 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             data = result.json()
             print('parsed json')
             username = data["username"]
-            full_address = data["address"]
+            address = data["address"]
             joining_date = data["joining_date"]
 
             print(type(joining_date))
             print('parsing address to postal code')
-
-            safe_address = address_to_postal_code(full_address)
-
-            print(f'safe address: {safe_address}')
 
             items_sold = execute_data_get(http,
                                           f"/get_user_sales?userId={user_id}")
@@ -182,7 +161,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             return make_ok_response(body={
                 "userId": user_id,
                 "username": username,
-                "location": safe_address,
+                "location": address,
                 "joiningDate": joining_date,
                 "itemsSold": [str(x) for x in items_sold],
                 "itemsPurchased": [str(x) for x in items_purchased],
@@ -314,21 +293,15 @@ def update_user_by_id(http, auth_token, user_id, address):
 
     print(f"userId: {user_id}")
 
-    parsed_address = parse_address(address)
-    if parsed_address is None:
+    geocode_result = address_to_latlng(http, address)
+    if geocode_result is None:
         return make_invalid_request_response("Invalid address")
 
-    full_address = parsed_address.full_address
-
-    geocode_result = address_to_latlng(http, full_address)
-    if geocode_result is None:
-        return make_internal_error_response()
-
-    lat, lng = geocode_result
+    lat, lng, postal_code = geocode_result
 
     result = execute_data_post(http, "/update_user", {
         "userId": user_id,
-        "address": full_address,
+        "address": postal_code,
         "location": {
             "lat": lat,
             "lng": lng,
@@ -374,19 +347,17 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
             listingId = data["listingId"]
             title = data["title"]
             price = data["price"]
-            full_address = data["address"]
+            address = data["address"]
             status = data["status"]
             listedAt: datetime.datetime = data["listedAt"]
             lastUpdatedAt: datetime.datetime = data["lastUpdatedAt"]
-
-            safe_address = address_to_postal_code(full_address)
 
             return make_ok_response(body={
                 "sellerId": sellerId,
                 "listingId": listingId,
                 "title": title,
                 "price": price,
-                "location": safe_address,
+                "location": address,
                 "status": status,
                 "listedAt": listedAt,
                 "lastUpdatedAt": lastUpdatedAt,
@@ -418,8 +389,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 listingId = listing["listingId"]
                 title = listing["title"]
                 price = listing["price"]
-                full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                address = listing["address"]
                 status = listing["status"]
                 listedAt: datetime.datetime = listing["listedAt"]
                 lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
@@ -429,7 +399,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                     "listingId": listingId,
                     "title": title,
                     "price": price,
-                    "location": safe_address,
+                    "location": address,
                     "status": status,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
@@ -464,8 +434,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                 listingId = listing["listingId"]
                 title = listing["title"]
                 price = listing["price"]
-                full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                address = listing["address"]
                 status = listing["status"]
                 listedAt: datetime.datetime = listing["listedAt"]
                 lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
@@ -475,7 +444,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                     "listingId": listingId,
                     "title": title,
                     "price": price,
-                    "location": safe_address,
+                    "location": address,
                     "status": status,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt,
@@ -498,21 +467,18 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
     if not creds:
         return make_unauthorized_response()
 
-    address = parse_address(address)
-    if not address:
+    pos = address_to_latlng(http, address)
+    if pos is None:
         return make_invalid_request_response("Invalid address")
-    else:
-        address = address.full_address
 
-    lat, lng = address_to_latlng(http, address)
-
+    lat, lng, postal_code = pos
     result = execute_data_post(http, f"/create_listing", {
         "sellerId": creds,
         "title": title,
         "price": price,
         "latitude": lat,
         "longitude": lng,
-        "address": address,
+        "address": postal_code,
         "status": 'AVAILABLE',
     })
     if result.status == 201:
@@ -536,13 +502,11 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     if not creds:
         return make_unauthorized_response()
 
-    address = parse_address(address)
-    if not address:
-        return make_invalid_request_response()
-    else:
-        address = address.full_address
+    pos = address_to_latlng(http, address)
+    if pos is None:
+        return make_invalid_request_response("Invalid address")
 
-    lat, lng = address_to_latlng(http, address)
+    lat, lng, postal_code = pos
 
     # TODO: only update fields that have changed?
     # TODO: if status is being changed to SOLD, then the buyer username must also be included
@@ -551,7 +515,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "listingId": listing_id,
             "title": title,
             "price": price,
-            "address": address,
+            "address": postal_code,
             "latitude": lat,
             "longitude": lng,
             "status": status,
@@ -749,8 +713,7 @@ def get_search(http, auth_token, q):
                 listingId = listing["listing_id"]
                 title = listing["title"]
                 price = listing["price"]
-                full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                address = listing["address"]
                 status = listing["status"]
                 listedAt = listing["created_on"]
 
@@ -759,7 +722,7 @@ def get_search(http, auth_token, q):
                     "listingId": listingId,
                     "title": title,
                     "price": price,
-                    "location": safe_address,
+                    "location": address,
                     "status": status,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
@@ -793,8 +756,7 @@ def get_recommendations(http, auth_token):
                 listingId = listing["listing_id"]
                 title = listing["title"]
                 price = listing["price"]
-                full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                address = listing["address"]
                 status = listing["status"]
                 listedAt = listing["created_on"]
 
@@ -803,7 +765,7 @@ def get_recommendations(http, auth_token):
                     "listingId": listingId,
                     "title": title,
                     "price": price,
-                    "location": safe_address,
+                    "location": address,
                     "status": status,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
@@ -891,25 +853,16 @@ def verify_account(http, token, username, password, address):
         hashed_password = hashlib.sha256(
             f"{password}{salt}".encode("ascii"), usedforsecurity=True).hexdigest()
 
-        parsed_address = parse_address(address)
-
-        if parsed_address is None:
-            print(f"failed to parse address {address}")
+        pos = address_to_latlng(http, address)
+        if pos is None:
             return make_invalid_request_response("Invalid address")
 
-        full_address = parsed_address.full_address
-
-        geocode_result = address_to_latlng(http, full_address)
-        if geocode_result is None:
-            print(f"failed to geocode address {address}")
-            return make_internal_error_response()
-
-        lat, lng = geocode_result
+        lat, lng, postal_code = pos
         body = {
             "email": email,
             "username": username,
             "password": hashed_password,
-            "address": full_address,
+            "address": postal_code,
             "location": {
                 "lat": lat,
                 "lng": lng
