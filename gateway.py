@@ -739,7 +739,7 @@ def get_search(http, auth_token, q):
     if not creds:
         return make_unauthorized_response()
 
-    result = http.request("GET", f"http://{SEARCH_REC_URL}/search?q={q}")
+    result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
         try:
             data = result.json()
@@ -782,7 +782,7 @@ def get_recommendations(http, auth_token):
         return make_unauthorized_response()
 
     result = http.request(
-        "GET", f"http://{SEARCH_REC_URL}/recommendations?userId={creds}")
+        "GET", f"{SEARCH_REC_URL}/recommendations?userId={creds}")
 
     if result.status == 200:
         try:
