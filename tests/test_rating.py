@@ -36,7 +36,7 @@ def test_get_ratings_success(setup_module):
         },
     ])
 
-    when(http).request("GET", f"http://{DATA_URL}/get_ratings?listingId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_ratings?listingId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
@@ -65,7 +65,7 @@ def test_get_ratings_does_not_exist(setup_module):
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", f"http://{DATA_URL}/get_ratings?listingId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_ratings?listingId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
@@ -119,7 +119,7 @@ def test_post_rating_success(setup_module):
         "status": 200,
     })
 
-    when(http).request("POST", f"http://{DATA_URL}/create_rating", json={
+    when(http).request("POST", f"{DATA_URL}/create_rating", json={
         "listingId": listing_id,
         "rating": rating,
         "userId": 1234
@@ -143,7 +143,7 @@ def test_post_listing_not_found(setup_module):
         "status": 404,
     })
 
-    when(http).request("POST", f"http://{DATA_URL}/create_rating", json={
+    when(http).request("POST", f"{DATA_URL}/create_rating", json={
         "listingId": listing_id,
         "rating": rating,
         "userId": 1234,

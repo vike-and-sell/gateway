@@ -1,7 +1,7 @@
 from mockito import when, mock, ANY
 import urllib3
 import json
-from test_utils import sign_jwt_for_test, DATA_API_KEY, MAPS_API_KEY
+from test_utils import sign_jwt_for_test, DATA_API_KEY, MAPS_API_KEY, DATA_URL
 import datetime
 from freezegun import freeze_time
 
@@ -52,7 +52,7 @@ def test_verify_account():
         when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                            .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
 
-        when(http).request("POST", "http://test/make_user", json={
+        when(http).request("POST", f"{DATA_URL}/make_user", json={
             "email": "test@uvic.ca",
             "username": username,
             "password": "02f51e9851b626f8a400c90d297141fecc50aa4b105f72b097126fd9949fa9ce",
@@ -63,7 +63,7 @@ def test_verify_account():
             "X-Api-Key": DATA_API_KEY
         }).thenReturn(response)
 
-        when(http).request("POST", "http://test/verify_account", body={
+        when(http).request("POST", f"{DATA_URL}/verify_account", body={
             "jwt": token,
             "username": username,
             "password": password,
@@ -111,7 +111,7 @@ def test_verify_account_invalid_username():
         "user_id": 1234
     })
 
-    when(http).request("POST", "http://test/verify_account", body={
+    when(http).request("POST", f"{DATA_URL}/verify_account", body={
         "jwt": token,
         "username": username,
         "password": password,
@@ -150,7 +150,7 @@ def test_verify_account_invalid_email():
         "user_id": 1234
     })
 
-    when(http).request("POST", "http://test/verify_account", body={
+    when(http).request("POST", f"{DATA_URL}/verify_account", body={
         "jwt": token,
         "username": username,
         "password": password,
@@ -189,7 +189,7 @@ def test_verify_account_invalid_password():
         "user_id": 1234
     })
 
-    when(http).request("POST", "http://test/verify_account", body={
+    when(http).request("POST", f"{DATA_URL}/verify_account", body={
         "jwt": token,
         "username": username,
         "password": password,
@@ -234,12 +234,12 @@ def test_login():
             "password": "8b053b0b4813dc1986827113c07d5edc9a206f12244e9432cb0a98419a15ab66"
         })
 
-        when(http).request("GET", "http://test/get_user_info_for_login?usr=john_doe", json=None,
+        when(http).request("GET", f"{DATA_URL}/get_user_info_for_login?usr=john_doe", json=None,
                            headers={
                                "X-Api-Key": DATA_API_KEY,
-                           }).thenReturn(getinforesponse)
+        }).thenReturn(getinforesponse)
 
-        when(http).request("POST", "http://test/login", body={
+        when(http).request("POST", f"{DATA_URL}/login", body={
             "username": username,
             "password": password
         }, headers={
@@ -276,12 +276,12 @@ def test_login_user_not_exists():
 
     when(response).json().thenReturn()
 
-    when(http).request("GET", "http://test/get_user_info_for_login?usr=test_user", json=None,
+    when(http).request("GET", f"{DATA_URL}/get_user_info_for_login?usr=test_user", json=None,
                        headers={
                            "X-Api-Key": DATA_API_KEY,
-                       }).thenReturn(response)
+    }).thenReturn(response)
 
-    when(http).request("POST", "http://test/login", body={
+    when(http).request("POST", f"{DATA_URL}/login", body={
         "username": username,
         "password": password
     }, headers={
@@ -313,12 +313,12 @@ def test_login_incorrect_password():
 
     when(response).json().thenReturn()
 
-    when(http).request("GET", "http://test/get_user_info_for_login?usr=john_doe", json=None,
+    when(http).request("GET", f"{DATA_URL}/get_user_info_for_login?usr=john_doe", json=None,
                        headers={
                            "X-Api-Key": DATA_API_KEY,
-                       }).thenReturn(response)
+    }).thenReturn(response)
 
-    when(http).request("POST", "http://test/login", body={
+    when(http).request("POST", f"{DATA_URL}/login", body={
         "username": username,
         "password": password
     }, headers={
@@ -386,19 +386,19 @@ def test_verify_reset():
         "user_id": 1234,
         "username": "john_doe"
     })
-    when(http).request("GET", "http://test/get_user_by_email?eml=john_doe@uvic.ca", json=None,
+    when(http).request("GET", f"{DATA_URL}/get_user_by_email?eml=john_doe@uvic.ca", json=None,
                        headers={
                            "X-Api-Key": DATA_API_KEY,
-                       }).thenReturn(emlresponse)
+    }).thenReturn(emlresponse)
 
-    when(http).request("POST", "http://test/update_user_password", json={
+    when(http).request("POST", f"{DATA_URL}/update_user_password", json={
         "user_id": 1234,
         "password": "ade53186e7d85ebd0e7d45eed46e9b663090be24147663496434041329b40916"
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
-    when(http).request("POST", "http://test/verify_reset", body={
+    when(http).request("POST", f"{DATA_URL}/verify_reset", body={
         "token": token,
         "password": password
     }).thenReturn(response)
@@ -430,19 +430,19 @@ def test_verify_reset_invalid_email():
         "user_id": 1234,
         "username": "john_doe"
     })
-    when(http).request("GET", "http://test/get_user_by_email?eml=test", json=None,
+    when(http).request("GET", f"{DATA_URL}/get_user_by_email?eml=test", json=None,
                        headers={
                            "X-Api-Key": DATA_API_KEY,
-                       }).thenReturn(emlresponse)
+    }).thenReturn(emlresponse)
 
-    when(http).request("POST", "http://test/update_user_password", json={
+    when(http).request("POST", f"{DATA_URL}/update_user_password", json={
         "user_id": 1234,
         "password": "ade53186e7d85ebd0e7d45eed46e9b663090be24147663496434041329b40916"
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
-    when(http).request("POST", "http://test/verify_reset", body={
+    when(http).request("POST", f"{DATA_URL}/verify_reset", body={
         "token": token,
         "password": password
     }).thenReturn(response)

@@ -124,7 +124,7 @@ def execute_data_request(http: urllib3.PoolManager, path, method, body):
     headers = {
         "X-Api-Key": DATA_API_KEY,
     }
-    return http.request(method, f"http://{DATA_URL}{path}", json=body, headers=headers)
+    return http.request(method, f"{DATA_URL}{path}", json=body, headers=headers)
 
 
 def execute_data_get(http, path):
