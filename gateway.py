@@ -54,6 +54,12 @@ def address_to_postal_code(address):
     return truncated_postal_code
 
 
+def is_postal_code(postal_code):
+    if re.match(r"^[A-Za-z]\d[A-Za-z]$", postal_code) != None:
+        return True
+    return False
+
+
 def resolve_credentials(auth_token: str):
     try:
         result: dict = jwt.decode(auth_token, JWT_SECRET, algorithms="HS256")
@@ -359,7 +365,6 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
-
 def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
@@ -375,11 +380,13 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
             title = data["title"]
             price = data["price"]
             full_address = data["address"]
+            if is_postal_code(full_address) == False:
+                safe_address = address_to_postal_code(full_address)
+            else:
+                safe_address = full_address
             status = data["status"]
-            listedAt: datetime.datetime = data["listedAt"]
-            lastUpdatedAt: datetime.datetime = data["lastUpdatedAt"]
-
-            safe_address = address_to_postal_code(full_address)
+            listedAt = data["listedAt"]
+            lastUpdatedAt = data["lastUpdatedAt"]
 
             return make_ok_response(body={
                 "sellerId": sellerId,
@@ -391,6 +398,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
                 "listedAt": listedAt,
                 "lastUpdatedAt": lastUpdatedAt,
             })
+
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -400,12 +408,10 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
 
     return make_internal_error_response()
 
-
 def get_my_listings(http: urllib3.PoolManager, auth_token):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-
     result = execute_data_get(http, f"/get_listing_by_seller?userId={creds}")
     if result.status == 200:
         try:
@@ -419,10 +425,13 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 title = listing["title"]
                 price = listing["price"]
                 full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                if is_postal_code(full_address) == False:
+                    safe_address = address_to_postal_code(full_address)
+                else:
+                    safe_address = full_address
                 status = listing["status"]
-                listedAt: datetime.datetime = listing["listedAt"]
-                lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
+                listedAt = listing["listedAt"]
+                lastUpdatedAt = listing["lastUpdatedAt"]
 
                 listings_list.append({
                     "sellerId": sellerId,
@@ -451,7 +460,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-
+    
     result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
         try:
@@ -465,10 +474,13 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                 title = listing["title"]
                 price = listing["price"]
                 full_address = listing["address"]
-                safe_address = address_to_postal_code(full_address)
+                if is_postal_code(full_address) == False:
+                    safe_address = address_to_postal_code(full_address)
+                else:
+                    safe_address = full_address
                 status = listing["status"]
-                listedAt: datetime.datetime = listing["listedAt"]
-                lastUpdatedAt: datetime.datetime = listing["lastUpdatedAt"]
+                listedAt = listing["listedAt"]
+                lastUpdatedAt = listing["lastUpdatedAt"]
 
                 listings_list.append({
                     "sellerId": sellerId,
@@ -478,7 +490,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
                     "location": safe_address,
                     "status": status,
                     "listedAt": listedAt,
-                    "lastUpdatedAt": lastUpdatedAt,
+                    "lastUpdatedAt": lastUpdatedAt
                 })
 
             return make_ok_response(body=listings_list)
