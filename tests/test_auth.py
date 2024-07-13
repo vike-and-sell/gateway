@@ -40,6 +40,9 @@ def test_verify_account():
                     "position": {
                         "lat": 123,
                         "lon": 456,
+                    },
+                    "address": {
+                        "postalCode": "V8W"
                     }
                 }
             ]
@@ -56,7 +59,7 @@ def test_verify_account():
             "email": "test@uvic.ca",
             "username": username,
             "password": "02f51e9851b626f8a400c90d297141fecc50aa4b105f72b097126fd9949fa9ce",
-            "address": address,
+            "address": "V8W",
             "location": {"lat": 123, "lng": 456},
             "join_date": datetime.datetime.now(datetime.UTC).isoformat()
         }, headers={
