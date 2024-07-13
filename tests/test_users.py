@@ -31,7 +31,7 @@ def test_get_user_by_id_success_path():
     when(sales_response).json().thenReturn(
         [12345, 67890]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(sales_response)
 
@@ -41,7 +41,7 @@ def test_get_user_by_id_success_path():
     when(purchases_response).json().thenReturn(
         [56789, 98765]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
@@ -230,7 +230,7 @@ def test_get_user_by_me_success_path():
     when(sales_response).json().thenReturn(
         [12345, 67890]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(sales_response)
 
@@ -240,7 +240,7 @@ def test_get_user_by_me_success_path():
     when(purchases_response).json().thenReturn(
         [56789, 98765]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
