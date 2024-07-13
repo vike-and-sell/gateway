@@ -14,7 +14,15 @@ def test_create_listing_success():
         "status": 200,
     })
     when(mockGeo).json().thenReturn({
-        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
     })
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
@@ -31,7 +39,7 @@ def test_create_listing_success():
         "price": 100.00,
         "latitude": 12.3456,
         "longitude": 78.9012,
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "address": "V8W",
         "status": "AVAILABLE",
 
     }, headers={
@@ -59,7 +67,15 @@ def test_create_listing_fail():
         "status": 200,
     })
     when(mockGeo).json().thenReturn({
-        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
     })
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
@@ -74,7 +90,7 @@ def test_create_listing_fail():
         "price": 100.00,
         "latitude": 12.3456,
         "longitude": 78.9012,
-        "address": address,
+        "address": "V8W",
         "status": "AVAILABLE",
 
     }, headers={
@@ -103,7 +119,15 @@ def test_patch_listing_success():
         "status": 200,
     })
     when(mockGeo).json().thenReturn({
-        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
     })
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
@@ -120,7 +144,7 @@ def test_patch_listing_success():
         "price": 10.00,
         "latitude": 12.3456,
         "longitude": 78.9012,
-        "address": address,
+        "address": "V8W",
         "status": "AVAILABLE",
 
     }, headers={
@@ -145,7 +169,15 @@ def test_patch_listing_fail():
         "status": 200,
     })
     when(mockGeo).json().thenReturn({
-        "results": [{"position": {"lat": 12.3456, "lon": 78.9012}}]
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
     })
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
@@ -159,7 +191,7 @@ def test_patch_listing_fail():
         "price": 10.00,
         "latitude": 12.3456,
         "longitude": 78.9012,
-        "address": address,
+        "address": "V8W",
         "status": "AVAILABLE",
     }, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -231,7 +263,7 @@ def test_get_sorted_listings_success():
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
-            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "address": "V8W",
             "status": "AVAILABLE",
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
@@ -242,7 +274,7 @@ def test_get_sorted_listings_success():
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
-            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "address": "V8W",
             "status": "AVAILABLE",
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
@@ -318,7 +350,7 @@ def test_get_listing_by_id_success():
         "title": "Chair",
         "price": 100.00,
         "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "address": "V8W",
         "status": "AVAILABLE",
         "listedAt": "2021-01-01T00:00:00Z",
         "lastUpdatedAt": "2021-01-01T00:00:00Z",
@@ -379,7 +411,7 @@ def test_get_my_listings_success():
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
-            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "address": "V8W",
             "status": "AVAILABLE",
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
@@ -390,7 +422,7 @@ def test_get_my_listings_success():
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
-            "address": "500 Fort St, Victoria, BC V8W 1E5",
+            "address": "V8W",
             "status": "AVAILABLE",
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",

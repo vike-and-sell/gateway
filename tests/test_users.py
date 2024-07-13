@@ -17,7 +17,7 @@ def test_get_user_by_id_success_path():
         "username": "bob1",
         "email": "bob1@uvic.ca",
         "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "address": "V8W",
         # jan 1, 2000 12am GMT
         "joining_date": "2000-01-01T00:00:00+00:00",
     })
@@ -31,7 +31,7 @@ def test_get_user_by_id_success_path():
     when(sales_response).json().thenReturn(
         [12345, 67890]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(sales_response)
 
@@ -41,7 +41,7 @@ def test_get_user_by_id_success_path():
     when(purchases_response).json().thenReturn(
         [56789, 98765]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
@@ -113,6 +113,9 @@ def test_update_user_by_id_success_path():
                 "position": {
                     "lat": 123,
                     "lon": 456,
+                },
+                "address": {
+                    "postalCode": "V8W"
                 }
             }
         ]
@@ -125,7 +128,7 @@ def test_update_user_by_id_success_path():
     })
     when(http).request("POST", f"{DATA_URL}/update_user", json={
         "userId": 5678,
-        "address": address,
+        "address": "V8W",
         "location": {
             "lat": 123,
             "lng": 456
@@ -176,6 +179,16 @@ def test_update_user_by_id_invalid_creds():
 
 def test_update_user_by_id_invalid_address():
     http = mock(urllib3.PoolManager())
+    address = "unparsable"
+
+    geocode_response = mock({
+        "status": 200,
+    })
+    when(geocode_response).json().thenReturn({
+        "results": []
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(MAPS_API_KEY, address)).thenReturn(geocode_response)
 
     token = sign_jwt_for_test({
         "uid": 5678
@@ -188,7 +201,7 @@ def test_update_user_by_id_invalid_address():
         })
     }
     actual = gateway.update_user_by_id(
-        http, token, 5678, "unparsable_address")
+        http, token, 5678, address)
     assert expected == actual
 
 
@@ -201,7 +214,7 @@ def test_get_user_by_me_success_path():
     when(response).json().thenReturn({
         "username": "bob1",
         "location": "12.3456,78.9012",
-        "address": "500 Fort St, Victoria, BC V8W 1E5",
+        "address": "V8W",
         # jan 1, 2000 12am GMT
         "joining_date": "2000-01-01T00:00:00+00:00",
         "items_sold": [12345, 67890],
@@ -217,7 +230,7 @@ def test_get_user_by_me_success_path():
     when(sales_response).json().thenReturn(
         [12345, 67890]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_sales?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(sales_response)
 
@@ -227,7 +240,7 @@ def test_get_user_by_me_success_path():
     when(purchases_response).json().thenReturn(
         [56789, 98765]
     )
-    when(http).request("GET", f"http://{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_user_purchases?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
