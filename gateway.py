@@ -230,7 +230,11 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     })
 
     if result.status == 200:
-        return make_ok_response()
+        data = result.json()
+        return make_created_response({
+            "ratingId": data.get("rating_id"),
+            "timestamp": data.get("created_on")
+        })
     if result.status == 404:
         return make_not_found_response("Listing not found")
 

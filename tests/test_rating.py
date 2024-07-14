@@ -119,6 +119,11 @@ def test_post_rating_success(setup_module):
         "status": 200,
     })
 
+    when(response).json().thenReturn({
+        "created_on": "2024-07-14T20:57:44.052744",
+        "rating_id": 84
+    })
+
     when(http).request("POST", f"{DATA_URL}/create_rating", json={
         "listingId": listing_id,
         "rating": rating,
@@ -128,7 +133,11 @@ def test_post_rating_success(setup_module):
     }).thenReturn(response)
 
     expected = {
-        "statusCode": 200,
+        "statusCode": 201,
+        "body": json.dumps({
+            "ratingId": 84,
+            "timestamp": "2024-07-14T20:57:44.052744"
+        })
     }
     actual = gateway.post_rating_by_listing_id(http, token, listing_id, rating)
     assert expected == actual

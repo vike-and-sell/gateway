@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, request
+from flask import Blueprint, request
 import gateway
 from .common import make_response
 import urllib3
@@ -18,7 +18,7 @@ def get_rating(listing_id):
 @rating_bp.post('/<int:listing_id>')
 def create_rating(listing_id):
     auth_token = request.cookies.get("Authorization")
-    rating = request.json.get('rating')
+    rating = request.json.get('ratingValue')
     result = gateway.post_rating_by_listing_id(
         http, auth_token, listing_id, rating)
     return make_response(result)
