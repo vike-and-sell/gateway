@@ -280,7 +280,13 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
     })
 
     if result.status == 200:
-        return make_ok_response()
+        data = result.json()
+        return make_created_response({
+            "listingReviewid": data.get('review_id'),
+            "reviewedListingId": data.get('listing_id'),
+            "timestamp": data.get('created_on')
+        })
+
     if result.status == 404:
         return make_not_found_response("Listing not found")
 

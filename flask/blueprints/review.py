@@ -17,7 +17,7 @@ def get_review(listing_id):
 @review_bp.post('/<int:listing_id>')
 def create_review(listing_id):
     auth_token = request.cookies.get("Authorization")
-    review = request.json.get('review')
+    review = request.json.get('reviewContent')
     result = gateway.post_review_by_listing_id(
         http, auth_token, listing_id, review)
     return make_response(result)
