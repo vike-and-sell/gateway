@@ -204,7 +204,7 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
         for object in data:
             body.append({
                 "username": object["username"],
-                "created_on": object["created_on"],
+                "createdOn": object["created_on"],
                 "rating": object["rating"]
             })
         return make_ok_response(body=body)
@@ -257,7 +257,7 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
         for object in data:
             body.append({
                 "username": object["username"],
-                "created_on": object["created_on"],
+                "createdOn": object["created_on"],
                 "review": object["review"]
             })
         return make_ok_response(body=body)
