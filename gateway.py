@@ -202,11 +202,7 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
         data = result.json()
         body = []
         for object in data:
-            body.append({
-                "username": object["username"],
-                "created_on": object["created_on"],
-                "rating": object["rating"]
-            })
+            body.append(object.get("rating"))
         return make_ok_response(body=body)
     if result.status == 404:
         return make_not_found_response("Listing not found")

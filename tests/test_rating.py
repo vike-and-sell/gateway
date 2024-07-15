@@ -42,18 +42,7 @@ def test_get_ratings_success(setup_module):
 
     expected = {
         "statusCode": 200,
-        "body": json.dumps([
-            {
-                "username": "bob1",
-                "created_on": "2001-01-01T00:00:00+00:00",
-                "rating": 3
-            },
-            {
-                "username": "bob2",
-                "created_on": "2003-01-11T00:00:00+00:00",
-                "rating": 4
-            },
-        ])
+        "body": json.dumps([3, 4])
     }
     actual = gateway.get_ratings_by_listing_id(http, token, 5678)
     assert expected == actual
