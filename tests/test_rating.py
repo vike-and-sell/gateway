@@ -45,12 +45,12 @@ def test_get_ratings_success(setup_module):
         "body": json.dumps([
             {
                 "username": "bob1",
-                "created_on": "2001-01-01T00:00:00+00:00",
+                "createdOn": "2001-01-01T00:00:00+00:00",
                 "rating": 3
             },
             {
                 "username": "bob2",
-                "created_on": "2003-01-11T00:00:00+00:00",
+                "createdOn": "2003-01-11T00:00:00+00:00",
                 "rating": 4
             },
         ])
