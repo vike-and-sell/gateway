@@ -16,6 +16,7 @@ DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
+SEARCH_REC_URL = os.environ["SEARCH_REC_URL"]
 
 
 def address_to_latlng(http, address):
@@ -229,7 +230,11 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     })
 
     if result.status == 200:
-        return make_ok_response()
+        data = result.json()
+        return make_created_response({
+            "ratingId": data.get("rating_id"),
+            "timestamp": data.get("created_on")
+        })
     if result.status == 404:
         return make_not_found_response("Listing not found")
 
@@ -279,7 +284,13 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
     })
 
     if result.status == 200:
-        return make_ok_response()
+        data = result.json()
+        return make_created_response({
+            "listingReviewid": data.get('review_id'),
+            "reviewedListingId": data.get('listing_id'),
+            "timestamp": data.get('created_on')
+        })
+
     if result.status == 404:
         return make_not_found_response("Listing not found")
 
@@ -700,7 +711,7 @@ def get_search(http, auth_token, q):
     if not creds:
         return make_unauthorized_response()
 
-    result = http.request("GET", f"http://serber.ddns.net:32500/search?q={q}")
+    result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
         try:
             data = result.json()
@@ -742,7 +753,7 @@ def get_recommendations(http, auth_token):
         return make_unauthorized_response()
 
     result = http.request(
-        "GET", f"http://serber.ddns.net:32500/recommendations?userId={creds}")
+        "GET", f"{SEARCH_REC_URL}/recommendations?userId={creds}")
 
     if result.status == 200:
         try:

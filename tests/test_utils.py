@@ -7,7 +7,7 @@ DATA_URL = os.environ["DATA_URL"]
 DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
-
+SEARCH_REC_URL = os.environ["SEARCH_REC_URL"]
 
 def sign_jwt_for_test(body) -> str:
     return jwt.encode(body, JWT_SECRET, algorithm="HS256")

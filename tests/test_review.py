@@ -101,6 +101,11 @@ def test_post_review_success(setup_module):
     response = mock({
         "status": 200
     })
+    when(response).json().thenReturn({
+        "created_on": "2024-07-14T21:16:31.865093",
+        "listing_id": 5678,
+        "review_id": 4
+    })
     when(http).request("POST", f"{DATA_URL}/create_review", json={
         "listingId": 5678,
         "review": "Ok, now this is awesome!",
@@ -109,8 +114,14 @@ def test_post_review_success(setup_module):
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
 
+
     expected = {
-        "statusCode": 200
+        "statusCode": 201,
+        "body": json.dumps({
+            "listingReviewid": 4,
+            "reviewedListingId": 5678,
+            "timestamp": "2024-07-14T21:16:31.865093"
+        })
     }
 
     actual = gateway.post_review_by_listing_id(

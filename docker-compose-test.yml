@@ -9,3 +9,4 @@ services:
       DATA_API_KEY: testapikey
       JWT_SECRET_KEY: testjwtsecret
       MAPS_API_KEY: testmapsapikey
+      SEARCH_REC_URL: ${SEARCH_REC_URL}
