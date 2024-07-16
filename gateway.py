@@ -426,10 +426,48 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     return make_internal_error_response()
 
 
-def get_sorted_listings(http: urllib3.PoolManager, auth_token, keywords):
+def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price, min_price, status, sort_by, is_descending):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+    
+    sort_by_validation = ["price", "created_on", "location"]
+    status_validation = ["AVAILABLE", "SOLD"]
+    desc_validation = ["True", "False"]
+
+    keywords = ""
+    if max_price is not None:
+        try:
+            max_price = float(max_price)
+        except ValueError: 
+            return make_invalid_request_response("Invalid max_price value")
+        
+        if 99999999.0 < max_price or max_price < 0.0:
+            return make_invalid_request_response("Invalid max_price value")
+        keywords += f"maxPrice={max_price}&"
+    if min_price is not None:
+        try:
+            min_price = float(min_price)
+        except ValueError: 
+            return make_invalid_request_response("Invalid min_price value")
+
+        if 99999999.0 < min_price or min_price < 0.0 :
+            return make_invalid_request_response("Invalid min_price value")
+        if max_price is not None and min_price > max_price:
+            return make_invalid_request_response("minPrice must be less than maxPrice")
+        keywords += f"minPrice={min_price}&"
+    if status is not None:
+        if status not in status_validation:
+            return make_invalid_request_response("Invalid status value")
+        keywords += f"status={status}&"
+    if sort_by is not None:
+        if sort_by not in sort_by_validation:
+            return make_invalid_request_response("Invalid sort by value")
+        keywords += f"sortBy={sort_by}&"
+    if is_descending is not None:
+        if is_descending not in desc_validation:
+            return make_invalid_request_response("Invalid descending value")
+        keywords += f"isDescending={is_descending}"
     
     result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
