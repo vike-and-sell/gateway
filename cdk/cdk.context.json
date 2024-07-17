@@ -2,5 +2,9 @@
   "hosted-zone:account=446708209687:domainName=brnn.ca:region=us-east-1": {
     "Id": "/hostedzone/Z03423443O6HCVVPFMSAH",
     "Name": "brnn.ca."
+  },
+  "hosted-zone:account=730335193650:domainName=vikeandsell.ca:region=us-east-1": {
+    "Id": "/hostedzone/Z104430925NDKBPUFRRXJ",
+    "Name": "vikeandsell.ca."
   }
 }

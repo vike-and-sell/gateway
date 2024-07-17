@@ -16,24 +16,24 @@ export class GatewayStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const domainName = "vas.brnn.ca";
+    const domainName = "gw.vikeandsell.ca";
     let zone;
     try {
-      zone = HostedZone.fromLookup(this, "BrnnHostedZone", {
-        domainName: "brnn.ca",
+      zone = HostedZone.fromLookup(this, "VasHostedZone", {
+        domainName: "vikeandsell.ca",
       });
 
       if (zone) {
         const cert = Certificate.fromCertificateArn(
           this,
-          `BrnnCert`,
-          "arn:aws:acm:us-east-1:446708209687:certificate/fcbd7810-fab9-48a4-8f07-e0545199abec",
+          `VasCert`,
+          "arn:aws:acm:us-east-1:730335193650:certificate/dde16328-aa57-4203-b35b-390ce86d21ad",
         );
-        this.domain = new DomainName(this, "BrnnDomain", {
+        this.domain = new DomainName(this, "VasDomain", {
           domainName,
           certificate: cert,
         });
-        new ARecord(this, "BrnnARecord", {
+        new ARecord(this, "VasARecord", {
           recordName: domainName,
           zone,
           target: RecordTarget.fromAlias(
@@ -44,7 +44,7 @@ export class GatewayStack extends Stack {
           ),
         });
       }
-    } catch { }
+    } catch {}
 
     this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
       layerVersionName: "gateway-python-layer",
@@ -57,10 +57,9 @@ export class GatewayStack extends Stack {
         allowOrigins: ["*"],
       },
       defaultDomainMapping: this.domain
-        ?
-        {
-          domainName: this.domain,
-        }
+        ? {
+            domainName: this.domain,
+          }
         : undefined,
     });
 
