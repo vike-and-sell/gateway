@@ -531,8 +531,17 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
     if result.status == 201:
         try:
             data = result.json()
+            listingId = data["listingId"]
+            title = data["title"]
+            price = data["price"]
+            address = data["address"]
+            status = data["status"]
             return make_created_response(body={
-                "listingId": data["listingId"],
+                "listingId": listingId,
+                "title": title,
+                "price": price,
+                "location": address,
+                "status": status,
             })
 
         except json.decoder.JSONDecodeError:
