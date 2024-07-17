@@ -34,7 +34,7 @@ jobs:
         run: npm install
       - name: Package app
         working-directory: cdk
-        run: sh packaging.sh
+        run: sh package.sh
       - name: Deploy stack
         working-directory: cdk
         run: npx cdk deploy
