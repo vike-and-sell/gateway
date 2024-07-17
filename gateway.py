@@ -758,6 +758,12 @@ def get_search(http, auth_token, q):
     if not creds:
         return make_unauthorized_response()
 
+    result = execute_data_post(http, f"/create_search", {
+        "userId": creds,
+        "search": q
+    })
+    if result.status != 200:
+        return make_internal_error_response()
     result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
         try:
