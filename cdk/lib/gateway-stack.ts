@@ -2,7 +2,12 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
-import { DomainName, HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import {
+  CorsHttpMethod,
+  DomainName,
+  HttpApi,
+  HttpMethod,
+} from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { ApiGatewayv2DomainProperties } from "aws-cdk-lib/aws-route53-targets";
@@ -54,7 +59,14 @@ export class GatewayStack extends Stack {
 
     this.api = new HttpApi(this, "GatewayHttpApi", {
       corsPreflight: {
-        allowOrigins: ["*"],
+        allowOrigins: [
+          "https://lab.vikeandsell.ca",
+          "https://www.vikeandsell.ca",
+          "https://localhost:5173", // allow local dev if it's on https
+        ],
+        allowHeaders: ["content-type"],
+        allowMethods: [CorsHttpMethod.ANY],
+        allowCredentials: true,
       },
       defaultDomainMapping: this.domain
         ? {
