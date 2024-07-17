@@ -555,6 +555,15 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     if status=='SOLD' and buyer_username is None:
         return make_invalid_request_response("Include buyerUsername if marking as sold")
 
+    if status=='SOLD' and buyer_username is not None:
+        result = execute_data_post(
+            http, f"/create_sale", {
+                "listingId": listing_id,
+                "buyerUsername": buyer_username
+            })
+        if result.status != 200:
+            make_invalid_request_response("Invalid buyerUsername")
+
     lat = None
     lng = None
     postal_code = None
@@ -572,20 +581,13 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "address": postal_code,
             "latitude": lat,
             "longitude": lng,
-            "status": status,
-            "buyerUsername": buyer_username
+            "status": status
         })
     if result.status == 200:
-        try:
-            data = result.json()
-            return make_ok_response()
-
-        except json.decoder.JSONDecodeError:
-            return make_not_found_response()
-        except Exception as e:
-            make_internal_error_response()
+        return make_ok_response()
     elif result.status == 400:
         return make_invalid_request_response("Invalid request")
+    return make_internal_error_response()
 
 
 def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
@@ -750,7 +752,6 @@ def write_message(http, auth_token, chat_id, content) -> int:
         return make_not_found_response("chatId not found")
 
     return make_internal_error_response()
-
 
 def get_search(http, auth_token, q):
     creds = resolve_credentials(auth_token)
