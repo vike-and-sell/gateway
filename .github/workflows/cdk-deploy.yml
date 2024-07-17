@@ -1,4 +1,4 @@
-name: AWS CDK synth
+name: AWS CDK deploy
 on:
   push:
     branches:
@@ -6,6 +6,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      - DATA_URL: ${{ vars.DATA_URL }}
+      - DATA_API_KEY: ${{ secrets.DL_API_KEY }}
+      - JWT_SECRET: ${{ secrets.JWT_SECRET_KEY }}
+      - MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+      - SMTP_SERVER: ${{ vars.SMTP_SERVER }}
+      - SMTP_PORT: ${{ vars.SMTP_PORT }}
+      - SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
+      - SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      - SEARCH_REC_URL: ${{ vars.SEARCH_REC_URL }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -25,13 +35,3 @@ jobs:
       - name: Deploy stack
         working-directory: cdk
         run: npx cdk deploy
-        env:
-          - DATA_URL: ${{ vars.DATA_URL }}
-          - DATA_API_KEY: ${{ secrets.DL_API_KEY }}
-          - JWT_SECRET: ${{ secrets.JWT_SECRET_KEY }}
-          - MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
-          - SMTP_SERVER: ${{ vars.SMTP_SERVER }}
-          - SMTP_PORT: ${{ vars.SMTP_PORT }}
-          - SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
-          - SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          - SEARCH_REC_URL: ${{ vars.SEARCH_REC_URL }}
