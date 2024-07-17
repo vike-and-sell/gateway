@@ -15,6 +15,7 @@ def handler(event, context):
     price = params.get('price')
     address = params.get('location')
     status = params.get('status')
+    buyer_username = params.get('buyerUsername')
     result = gateway.update_listing(
-        http, auth_token, listing_id, title, price, address, status)
+        http, auth_token, listing_id, title, price, address, status, buyer_username)
     return mould_response(result)

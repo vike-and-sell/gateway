@@ -25,8 +25,9 @@ def patch_listing(listing_id):
     price = request.json.get('price')
     address = request.json.get('address')
     status = request.json.get('status')
+    buyer_user_name = request.json.get('buyerUsername')
     result = gateway.update_listing(
-        http, auth_token, listing_id, title, price, address, status)
+        http, auth_token, listing_id, title, price, address, status, buyer_user_name)
     return make_response(result)
 
 
