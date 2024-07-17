@@ -435,7 +435,6 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
 
     sort_by_validation = ["price", "created_on", "location"]
     status_validation = ["AVAILABLE", "SOLD"]
-    desc_validation = [True, False]
 
     keywords = ""
     if max_price is not None:

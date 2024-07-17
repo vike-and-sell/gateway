@@ -253,7 +253,7 @@ def test_get_sorted_listings_success():
     max_price = "1000.00"
     min_price = None
     sort_by = None
-    is_descending = None
+    is_descending = False
     status = "AVAILABLE"
 
     http = mock(urllib3.PoolManager())
@@ -285,7 +285,7 @@ def test_get_sorted_listings_success():
         },
 
     ])
-    when(http).request("GET", f"{DATA_URL}/get_listings?maxPrice=1000.0&status=AVAILABLE&", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?maxPrice=1000.0&status=AVAILABLE&isDescending=False", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -316,7 +316,8 @@ def test_get_sorted_listings_success():
             },
         ])
     }
-    actual = gateway.get_sorted_listings(http, token, max_price, min_price, status, sort_by, is_descending)
+    actual = gateway.get_sorted_listings(
+        http, token, max_price, min_price, status, sort_by, is_descending)
     assert expected == actual
 
 
@@ -325,13 +326,13 @@ def test_get_sorted_listings_fail():
     min_price = None
     max_price = None
     sort_by = "created_on"
-    is_descending = None
+    is_descending = False
 
     http = mock(urllib3.PoolManager())
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE&sortBy=created_on&", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE&sortBy=created_on&isDescending=False", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -343,7 +344,8 @@ def test_get_sorted_listings_fail():
             "message": "Listing not found"
         }),
     }
-    actual = gateway.get_sorted_listings(http, token, max_price, min_price, status, sort_by, is_descending)
+    actual = gateway.get_sorted_listings(
+        http, token, max_price, min_price, status, sort_by, is_descending)
     assert expected == actual
 
 
