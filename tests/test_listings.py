@@ -32,6 +32,10 @@ def test_create_listing_success():
     })
     when(response).json().thenReturn({
         "listingId": 1234,
+        "title": "Chair",
+        "price": 100.00,
+        "address": "V8W",
+        "status": "AVAILABLE",
     })
     when(http).request("POST", f"{DATA_URL}/create_listing", json={
         "sellerId": 5678,
@@ -52,6 +56,10 @@ def test_create_listing_success():
         "statusCode": 201,
         "body": json.dumps({
             "listingId": 1234,
+            "title": "Chair",
+            "price": 100.00,
+            "location": "V8W",
+            "status": "AVAILABLE",
         })
     }
     actual = gateway.create_listing(http, token, "Chair", 100.00, address)
