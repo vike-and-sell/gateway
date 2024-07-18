@@ -110,11 +110,11 @@ export class GatewayStack extends Stack {
     this.route(HttpMethod.GET, "/users/me", "my_user");
 
     // Ratings & Reviews
-    this.route(HttpMethod.GET, "/reviews/{listingId}", "get_reviews");
-    this.route(HttpMethod.POST, "/reviews/{listingId}", "create_review");
+    this.route(HttpMethod.GET, "/review/{listingId}", "get_reviews");
+    this.route(HttpMethod.POST, "/review/{listingId}", "create_review");
 
-    this.route(HttpMethod.GET, "/ratings/{listingId}", "get_ratings");
-    this.route(HttpMethod.POST, "/ratings/{listingId}", "create_rating");
+    this.route(HttpMethod.GET, "/rating/{listingId}", "get_ratings");
+    this.route(HttpMethod.POST, "/rating/{listingId}", "create_rating");
 
     // Search
     this.route(HttpMethod.GET, "/search", "search");
