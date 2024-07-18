@@ -146,7 +146,6 @@ def test_patch_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "buyerUsername": None
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -193,7 +192,6 @@ def test_patch_listing_fail():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "buyerUsername": None
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
