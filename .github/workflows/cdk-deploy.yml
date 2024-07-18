@@ -19,10 +19,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: "22"
+      - uses: actions/setup-node@v2
       - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@master
         with:
