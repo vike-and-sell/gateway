@@ -658,7 +658,11 @@ def create_chat(http, auth_token, listingId):
             })
 
         if result.status == 409:
-            return make_invalid_request_response("Chat already exists for that listingId")
+            data = result.json()
+            chat_id = data["chatId"]
+            return make_ok_response(body={
+                "chatId": chat_id
+            })
 
     except Exception as e:
         print(e)
