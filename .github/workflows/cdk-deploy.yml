@@ -34,4 +34,4 @@ jobs:
         run: sh package.sh
       - name: Deploy stack
         working-directory: cdk
-        run: npx cdk deploy
+        run: npx cdk deploy --require-approval never
