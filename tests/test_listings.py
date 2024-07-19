@@ -154,7 +154,6 @@ def test_patch_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -165,7 +164,7 @@ def test_patch_listing_success():
         "statusCode": 200,
     }
     actual = gateway.update_listing(
-        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE")
+        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE", None)
     assert expected == actual
 
 
@@ -214,7 +213,7 @@ def test_patch_listing_fail():
         }),
     }
     actual = gateway.update_listing(
-        http, token, 1111, "", 10.00, address, "AVAILABLE")
+        http, token, 1111, "", 10.00, address, "AVAILABLE", None)
     assert expected == actual
 
 
