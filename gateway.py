@@ -343,6 +343,7 @@ def get_search_history_by_id(http, auth_token, user_id):
 
     return make_internal_error_response()
 
+
 def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
@@ -381,6 +382,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
+
 
 def get_my_listings(http: urllib3.PoolManager, auth_token):
     creds = resolve_credentials(auth_token)
@@ -426,32 +428,31 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     return make_internal_error_response()
 
 
-def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price, min_price, status, sort_by, is_descending):
+def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float, min_price: float, status: str, sort_by: str, is_descending: bool):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
+
     sort_by_validation = ["price", "created_on", "location"]
     status_validation = ["AVAILABLE", "SOLD"]
-    desc_validation = ["True", "False"]
 
     keywords = ""
     if max_price is not None:
         try:
             max_price = float(max_price)
-        except ValueError: 
+        except ValueError:
             return make_invalid_request_response("Invalid max_price value")
-        
+
         if 99999999.0 < max_price or max_price < 0.0:
             return make_invalid_request_response("Invalid max_price value")
         keywords += f"maxPrice={max_price}&"
     if min_price is not None:
         try:
             min_price = float(min_price)
-        except ValueError: 
+        except ValueError:
             return make_invalid_request_response("Invalid min_price value")
 
-        if 99999999.0 < min_price or min_price < 0.0 :
+        if 99999999.0 < min_price or min_price < 0.0:
             return make_invalid_request_response("Invalid min_price value")
         if max_price is not None and min_price > max_price:
             return make_invalid_request_response("minPrice must be less than maxPrice")
@@ -464,11 +465,9 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price, min_pr
         if sort_by not in sort_by_validation:
             return make_invalid_request_response("Invalid sort by value")
         keywords += f"sortBy={sort_by}&"
-    if is_descending is not None:
-        if is_descending not in desc_validation:
-            return make_invalid_request_response("Invalid descending value")
-        keywords += f"isDescending={is_descending}"
-    
+
+    keywords += f"isDescending={is_descending}"
+
     result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
         try:
@@ -531,8 +530,17 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
     if result.status == 201:
         try:
             data = result.json()
+            listingId = data["listingId"]
+            title = data["title"]
+            price = data["price"]
+            address = data["address"]
+            status = data["status"]
             return make_created_response(body={
-                "listingId": data["listingId"],
+                "listingId": listingId,
+                "title": title,
+                "price": price,
+                "location": address,
+                "status": status,
             })
 
         except json.decoder.JSONDecodeError:
@@ -758,6 +766,12 @@ def get_search(http, auth_token, q):
     if not creds:
         return make_unauthorized_response()
 
+    result = execute_data_post(http, f"/create_search", {
+        "userId": creds,
+        "search": q
+    })
+    if result.status != 200:
+        return make_internal_error_response()
     result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
         try:

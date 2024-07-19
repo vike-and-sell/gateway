@@ -47,7 +47,12 @@ def get_listings():
     sort_by = request.args.get('sortBy')
     is_descending = request.args.get('isDescending')
 
-    result = gateway.get_sorted_listings(http, auth_token, max_price, min_price, status, sort_by, is_descending)
+    if is_descending == "true":
+        is_descending = True
+    else:
+        is_descending = False
+    result = gateway.get_sorted_listings(http, auth_token, float(
+        max_price), float(min_price), status, sort_by, is_descending)
     return make_response(result)
 
 
