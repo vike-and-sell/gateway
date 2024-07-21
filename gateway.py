@@ -164,8 +164,8 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
                 "username": username,
                 "location": address,
                 "joiningDate": joining_date,
-                "itemsSold": [str(x) for x in items_sold],
-                "itemsPurchased": [str(x) for x in items_purchased],
+                "itemsSold": items_sold,
+                "itemsPurchased": items_purchased,
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
