@@ -56,8 +56,8 @@ def test_get_user_by_id_success_path():
             "username": "bob1",
             "location": "V8W",
             "joiningDate": "2000-01-01T00:00:00+00:00",
-            "itemsSold": ["12345", "67890"],
-            "itemsPurchased": ["56789", "98765"],
+            "itemsSold": [12345, 67890],
+            "itemsPurchased": [56789, 98765],
         })
     }
     actual = gateway.get_user_by_id(http, token, 5678)
@@ -255,8 +255,8 @@ def test_get_user_by_me_success_path():
             "username": "bob1",
             "location": "V8W",
             "joiningDate": "2000-01-01T00:00:00+00:00",
-            "itemsSold": ["12345", "67890"],
-            "itemsPurchased": ["56789", "98765"],
+            "itemsSold": [12345, 67890],
+            "itemsPurchased": [56789, 98765],
         })
     }
     actual = gateway.get_user_by_auth_token(http, token)
