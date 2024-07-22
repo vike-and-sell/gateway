@@ -359,6 +359,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
             price = data["price"]
             address = data["address"]
             status = data["status"]
+            forCharity = data["for_charity"]
             listedAt = data["listedAt"]
             lastUpdatedAt = data["lastUpdatedAt"]
 
@@ -369,6 +370,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": forCharity,
                 "listedAt": listedAt,
                 "lastUpdatedAt": lastUpdatedAt,
             })
@@ -400,6 +402,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                forCharity = listing["for_charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -410,6 +413,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": forCharity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
@@ -483,6 +487,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price, min_pr
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                forCharity = listing["for_charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -493,6 +498,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price, min_pr
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": forCharity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
@@ -762,6 +768,7 @@ def get_search(http, auth_token, q):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                forCharity = listing["for_charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -771,6 +778,7 @@ def get_search(http, auth_token, q):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": forCharity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
@@ -805,6 +813,7 @@ def get_recommendations(http, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                forCharity = listing["for_charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -814,6 +823,7 @@ def get_recommendations(http, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": forCharity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
@@ -1056,14 +1066,14 @@ def get_charities(http: urllib3.PoolManager, auth_token):
             charities_list = []
 
             for charity in data:
-                charityId = charity["charityId"]
+                charityId = charity["charity_id"]
                 name = charity["name"]
                 status = charity["status"]
                 fund = charity["fund"]
-                logoUrl = charity["logoUrl"]
-                startDate = charity["startDate"]
-                endDate = charity["endDate"]
-                numListings = charity["numListings"]
+                logoUrl = charity["logo_url"]
+                startDate = charity["start_date"]
+                endDate = charity["end_date"]
+                numListings = charity["num_listings"]
 
                 charities_list.append({
                     "charityId": charityId,
