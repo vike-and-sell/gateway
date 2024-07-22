@@ -7,6 +7,7 @@ from .search import search_bp
 from .recommendations import recommendations_bp
 from .chats import chats_bp
 from .messages import messages_bp
+from .charity import charity_bp
 
 def init_app(app):
     app.register_blueprint(auth_bp)
@@ -18,3 +19,4 @@ def init_app(app):
     app.register_blueprint(recommendations_bp, url_prefix='/recommendations')
     app.register_blueprint(chats_bp, url_prefix='/chats')
     app.register_blueprint(messages_bp, url_prefix='/messages')
+    app.register_blueprint(charity_bp, url_prefix='/charity')

@@ -1043,6 +1043,49 @@ def login(http, username, password):
     print("invalid password")
     return make_invalid_request_response()
 
+def get_charities(http: urllib3.PoolManager, auth_token):
+    print("getting charities")
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, "/get_charities")
+    if result.status == 200:
+        try:
+            data = result.json()
+            charities_list = []
+
+            for charity in data:
+                charityId = charity["charityId"]
+                name = charity["name"]
+                status = charity["status"]
+                fund = charity["fund"]
+                logoUrl = charity["logoUrl"]
+                startDate = charity["startDate"]
+                endDate = charity["endDate"]
+                numListings = charity["numListings"]
+
+                charities_list.append({
+                    "charityId": charityId,
+                    "name": name,
+                    "status": status,
+                    "fund": fund,
+                    "logoUrl": logoUrl,
+                    "startDate": startDate,
+                    "endDate": endDate,
+                    "numListings": numListings
+                })
+
+            return make_ok_response(body=charities_list)
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Charities not found")
+
+    return make_internal_error_response()
 
 def not_implemented():
     return {
