@@ -13,5 +13,5 @@ def handler(event, context):
     body = get_body(event)
     value = body.get('ratingValue')
     result = gateway.post_rating_by_listing_id(
-        http, auth_token, listing_id, value)
+        http, auth_token, int(listing_id), int(value))
     return mould_response(result)

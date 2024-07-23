@@ -13,5 +13,5 @@ def handler(event, context):
     body = get_body(event)
     content = body.get('reviewContent')
     result = gateway.post_review_by_listing_id(
-        http, auth_token, listing_id, content)
+        http, auth_token, int(listing_id), content)
     return mould_response(result)

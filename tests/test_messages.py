@@ -27,7 +27,7 @@ def test_get_all_chats_success_path():
     expected = {
         "statusCode": 200,
         "body": json.dumps([
-            "1234", "5678", "9012"
+            1234, 5678, 9012
         ])
     }
     actual = gateway.get_chats(http, token)
@@ -102,14 +102,14 @@ def test_get_messages_success_path():
         "body": json.dumps({
             "messages": [
                 {
-                    "messageId": "1234",
-                    "senderId": "5678",
+                    "messageId": 1234,
+                    "senderId": 5678,
                     "content": "Hello, World!",
                     "timestamp": "2000-01-01T00:00:00+00:00"
                 },
                 {
-                    "messageId": "3456",
-                    "senderId": "7890",
+                    "messageId": 3456,
+                    "senderId": 7890,
                     "content": "Goodbye, World!",
                     "timestamp": "2100-01-01T00:00:00+00:00"
                 }
@@ -205,8 +205,8 @@ def test_get_chat_preview_success_path():
     expected = {
         "statusCode": 200,
         "body": json.dumps({
-            "users": ["5678", "9012"],
-            "listingId": "3456",
+            "users": [5678, 9012],
+            "listingId": 3456,
             "lastMessageTime": "2010-01-01T00:00:00+00:00"
         })
     }

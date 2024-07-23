@@ -1,7 +1,7 @@
 mkdir -p packaging
 mkdir -p packaging/layer
 
-cp ../flask/requirements.txt packaging/layer/requirements.txt
+cp ../requirements.txt packaging/layer/requirements.txt
 
 for f in ../lambda/*.py ; do 
     name=$(basename $f)

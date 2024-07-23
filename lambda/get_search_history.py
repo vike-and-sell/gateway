@@ -1,13 +1,11 @@
-from shared import mould_response, get_auth_token, get_path_params
+from shared import mould_response, get_auth_token
 import gateway
 import urllib3
 http = urllib3.PoolManager()
-# PATH: GET /users/{userId}/searches
+# PATH: GET /users/me/searches
 
 
 def handler(event, context):
     auth_token = get_auth_token(event)
-    params = get_path_params(event)
-    user_id = params.get('userId')
-    result = gateway.get_search_history_by_id(http, auth_token, user_id)
+    result = gateway.get_search_history(http, auth_token)
     return mould_response(result)

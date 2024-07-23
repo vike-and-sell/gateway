@@ -2,7 +2,12 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
-import { DomainName, HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import {
+  CorsHttpMethod,
+  DomainName,
+  HttpApi,
+  HttpMethod,
+} from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { ApiGatewayv2DomainProperties } from "aws-cdk-lib/aws-route53-targets";
@@ -16,24 +21,24 @@ export class GatewayStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const domainName = "vas.brnn.ca";
+    const domainName = "gw.vikeandsell.ca";
     let zone;
     try {
-      zone = HostedZone.fromLookup(this, "BrnnHostedZone", {
-        domainName: "brnn.ca",
+      zone = HostedZone.fromLookup(this, "VasHostedZone", {
+        domainName: "vikeandsell.ca",
       });
 
       if (zone) {
         const cert = Certificate.fromCertificateArn(
           this,
-          `BrnnCert`,
-          "arn:aws:acm:us-east-1:446708209687:certificate/fcbd7810-fab9-48a4-8f07-e0545199abec",
+          `VasCert`,
+          "arn:aws:acm:us-east-1:730335193650:certificate/dde16328-aa57-4203-b35b-390ce86d21ad",
         );
-        this.domain = new DomainName(this, "BrnnDomain", {
+        this.domain = new DomainName(this, "VasDomain", {
           domainName,
           certificate: cert,
         });
-        new ARecord(this, "BrnnARecord", {
+        new ARecord(this, "VasARecord", {
           recordName: domainName,
           zone,
           target: RecordTarget.fromAlias(
@@ -44,7 +49,7 @@ export class GatewayStack extends Stack {
           ),
         });
       }
-    } catch { }
+    } catch {}
 
     this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
       layerVersionName: "gateway-python-layer",
@@ -54,13 +59,19 @@ export class GatewayStack extends Stack {
 
     this.api = new HttpApi(this, "GatewayHttpApi", {
       corsPreflight: {
-        allowOrigins: ["*"],
+        allowOrigins: [
+          "https://lab.vikeandsell.ca",
+          "https://www.vikeandsell.ca",
+          "https://localhost:5173", // allow local dev if it's on https
+        ],
+        allowHeaders: ["content-type"],
+        allowMethods: [CorsHttpMethod.ANY],
+        allowCredentials: true,
       },
       defaultDomainMapping: this.domain
-        ?
-        {
-          domainName: this.domain,
-        }
+        ? {
+            domainName: this.domain,
+          }
         : undefined,
     });
 
@@ -88,22 +99,17 @@ export class GatewayStack extends Stack {
 
     // Users
     this.route(HttpMethod.GET, "/users/{userId}", "get_user");
-    this.route(HttpMethod.PATCH, "/users/{userId}", "update_user");
-
-    this.route(
-      HttpMethod.GET,
-      "/users/{userId}/searches",
-      "get_search_history",
-    );
 
     this.route(HttpMethod.GET, "/users/me", "my_user");
+    this.route(HttpMethod.PATCH, "/users/me", "update_user");
+    this.route(HttpMethod.GET, "/users/me/searches", "get_search_history");
 
     // Ratings & Reviews
-    this.route(HttpMethod.GET, "/reviews/{listingId}", "get_reviews");
-    this.route(HttpMethod.POST, "/reviews/{listingId}", "create_review");
+    this.route(HttpMethod.GET, "/review/{listingId}", "get_reviews");
+    this.route(HttpMethod.POST, "/review/{listingId}", "create_review");
 
-    this.route(HttpMethod.GET, "/ratings/{listingId}", "get_ratings");
-    this.route(HttpMethod.POST, "/ratings/{listingId}", "create_rating");
+    this.route(HttpMethod.GET, "/rating/{listingId}", "get_ratings");
+    this.route(HttpMethod.POST, "/rating/{listingId}", "create_rating");
 
     // Search
     this.route(HttpMethod.GET, "/search", "search");
