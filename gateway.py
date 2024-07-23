@@ -629,8 +629,7 @@ def get_chats(http, auth_token):
     result = execute_data_get(http, f"/get_chats?userId={creds}")
 
     if result.status == 200:
-        data = result.json()
-        body = data
+        body = result.json()
         return make_ok_response(body)
     if result.status == 404:
         return make_ok_response([])
