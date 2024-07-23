@@ -794,13 +794,6 @@ def get_search(http, auth_token, q):
                 } for listing in listings]
             users = data.get("users")
             users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
-            for user in users:
-                user_id = user["user_id"]
-                username = user["username"]
-                users_list.append({
-                    "userId": user_id,
-                    "username": username
-                })
 
             return make_ok_response(body={"listings": listings_list, "users": users_list})
 
