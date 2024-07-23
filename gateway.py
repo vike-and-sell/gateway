@@ -8,6 +8,7 @@ import jwt.exceptions
 import jwt.utils
 import urllib3
 import hashlib
+import bleach
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -746,6 +747,8 @@ def write_message(http, auth_token, chat_id, content) -> int:
         # to send messages in the chat
         if creds != seller and creds != buyer:
             return make_unauthorized_response()
+
+        content = bleach.clean(content)
 
         result = execute_data_post(http, f"/create_message", {
             "chatId": chat_id,
