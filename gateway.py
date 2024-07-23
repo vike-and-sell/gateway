@@ -781,8 +781,9 @@ def get_search(http, auth_token, q):
         try:
             data = result.json()
             listings_list = []
+            listings = data.get("listings")
 
-            for listing in data:
+            for listing in listings:
                 sellerId = listing["seller_id"]
                 listingId = listing["listing_id"]
                 title = listing["title"]
@@ -801,8 +802,17 @@ def get_search(http, auth_token, q):
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
+            users = data.get("users")
+            users_list = []
+            for user in users:
+                user_id = user["user_id"]
+                username = user["username"]
+                users_list.append({
+                    "userId": user_id,
+                    "username": username
+                })
 
-            return make_ok_response(body=listings_list)
+            return make_ok_response(body={"listings": listings_list, "users": users_list})
 
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
