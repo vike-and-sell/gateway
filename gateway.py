@@ -783,27 +783,17 @@ def get_search(http, auth_token, q):
             listings_list = []
             listings = data.get("listings")
 
-            for listing in listings:
-                sellerId = listing["seller_id"]
-                listingId = listing["listing_id"]
-                title = listing["title"]
-                price = listing["price"]
-                address = listing["address"]
-                status = listing["status"]
-                listedAt = listing["created_on"]
-
-                listings_list.append({
-                    "sellerId": sellerId,
-                    "listingId": listingId,
-                    "title": title,
-                    "price": price,
-                    "location": address,
-                    "status": status,
-                    "listedAt": listedAt,
-                    "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
-                })
+            listings_list = [{
+                "sellerId": listing.get('seller_id'),
+                "listingId": listing.get('listing_id'),
+                "title": listing.get('title'),
+                "price": listing.get('price'),
+                "location": listing.get('location'),
+                "status": listing.get('status'),
+                "listedAt": listing.get('created_on'),
+                } for listing in listings]
             users = data.get("users")
-            users_list = []
+            users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
             for user in users:
                 user_id = user["user_id"]
                 username = user["username"]
