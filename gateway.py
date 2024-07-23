@@ -556,7 +556,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username, for_charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -593,7 +593,8 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "address": postal_code,
             "latitude": lat,
             "longitude": lng,
-            "status": status
+            "status": status,
+            "forCharity": for_charity
         })
     if result.status == 200:
         return make_ok_response()
@@ -794,6 +795,7 @@ def get_search(http, auth_token, q):
                 "price": listing.get('price'),
                 "location": listing.get('location'),
                 "status": listing.get('status'),
+                "forCharity": listing.get('for_charity'),
                 "listedAt": listing.get('created_on'),
                 } for listing in listings]
             users = data.get("users")
