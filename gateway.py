@@ -164,8 +164,8 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
                 "username": username,
                 "location": address,
                 "joiningDate": joining_date,
-                "itemsSold": [str(x) for x in items_sold],
-                "itemsPurchased": [str(x) for x in items_purchased],
+                "itemsSold": items_sold,
+                "itemsPurchased": items_purchased,
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
@@ -629,8 +629,7 @@ def get_chats(http, auth_token):
     result = execute_data_get(http, f"/get_chats?userId={creds}")
 
     if result.status == 200:
-        data = result.json()
-        body = [str(x) for x in data]
+        body = result.json()
         return make_ok_response(body)
     if result.status == 404:
         return make_ok_response([])
@@ -691,9 +690,9 @@ def get_messages(http, auth_token, chat_id):
         data = result.json()
         print(data)
         messages = [{
-            "messageId": str(x["message_id"]),
-            "senderId": str(x["sender_id"]),
-            "content": str(x["message_content"]),
+            "messageId": x["message_id"],
+            "senderId": x["sender_id"],
+            "content": x["message_content"],
             "timestamp": x["created_on"]
         } for x in data]
         return make_ok_response({
@@ -719,8 +718,8 @@ def get_chat_preview(http, auth_token, chat_id):
             chat_json = chat_info.json()
             print(chat_json)
             last_message_json = last_message_result.json()
-            users = [str(chat_json["seller"]), str(chat_json["buyer"])]
-            listing_id = str(chat_json["listing_id"])
+            users = [chat_json["seller"], chat_json["buyer"]]
+            listing_id = chat_json["listing_id"]
             last_message_time = last_message_json["timestamp"]
             return make_ok_response({
                 "users": users,
