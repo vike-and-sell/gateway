@@ -297,12 +297,10 @@ def post_review_by_listing_id(http, auth_token, listing_id, review):
     return make_internal_error_response()
 
 
-def update_user_by_id(http, auth_token, user_id, address):
+def update_user(http, auth_token, address):
     creds = resolve_credentials(auth_token)
-    if not creds or creds != user_id:
+    if not creds:
         return make_unauthorized_response()
-
-    print(f"userId: {user_id}")
 
     geocode_result = address_to_latlng(http, address)
     if geocode_result is None:
@@ -311,7 +309,7 @@ def update_user_by_id(http, auth_token, user_id, address):
     lat, lng, postal_code = geocode_result
 
     result = execute_data_post(http, "/update_user", {
-        "userId": user_id,
+        "userId": creds,
         "address": postal_code,
         "location": {
             "lat": lat,
@@ -327,12 +325,12 @@ def update_user_by_id(http, auth_token, user_id, address):
     return make_internal_error_response()
 
 
-def get_search_history_by_id(http, auth_token, user_id):
+def get_search_history(http, auth_token):
     creds = resolve_credentials(auth_token)
-    if not creds or creds != user_id:
+    if not creds:
         return make_unauthorized_response()
 
-    result = execute_data_get(http, f"/get_search_history?userId={user_id}")
+    result = execute_data_get(http, f"/get_search_history?userId={creds}")
 
     if result.status == 200:
         data = result.json()
@@ -560,10 +558,10 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     if status and status not in ['AVAILABLE', 'SOLD', 'REMOVED']:
         return make_invalid_request_response("Status must be AVAILABLE, SOLD, or REMOVED")
 
-    if status=='SOLD' and buyer_username is None:
+    if status == 'SOLD' and buyer_username is None:
         return make_invalid_request_response("Include buyerUsername if marking as sold")
 
-    if status=='SOLD' and buyer_username is not None:
+    if status == 'SOLD' and buyer_username is not None:
         result = execute_data_post(
             http, f"/create_sale", {
                 "listingId": listing_id,
@@ -763,6 +761,7 @@ def write_message(http, auth_token, chat_id, content) -> int:
         return make_not_found_response("chatId not found")
 
     return make_internal_error_response()
+
 
 def get_search(http, auth_token, q):
     creds = resolve_credentials(auth_token)
