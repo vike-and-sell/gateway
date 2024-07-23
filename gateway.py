@@ -189,7 +189,7 @@ def get_user_by_auth_token(http, auth_token):
     return get_user_by_id(http, auth_token, creds)
 
 
-def get_ratings_by_listing_id(http, auth_token, listing_id):
+def get_ratings_by_listing_id(http, auth_token, listing_id: int):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -214,7 +214,7 @@ def get_ratings_by_listing_id(http, auth_token, listing_id):
     return make_internal_error_response()
 
 
-def post_rating_by_listing_id(http, auth_token, listing_id, rating):
+def post_rating_by_listing_id(http, auth_token, listing_id: int, rating: int):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -241,7 +241,7 @@ def post_rating_by_listing_id(http, auth_token, listing_id, rating):
     return make_internal_error_response()
 
 
-def get_reviews_by_listing_id(http, auth_token, listing_id):
+def get_reviews_by_listing_id(http, auth_token, listing_id: int):
     creds = resolve_credentials(auth_token)
 
     if not creds:
@@ -267,7 +267,7 @@ def get_reviews_by_listing_id(http, auth_token, listing_id):
     return make_internal_error_response()
 
 
-def post_review_by_listing_id(http, auth_token, listing_id, review):
+def post_review_by_listing_id(http, auth_token, listing_id: int, review):
     creds = resolve_credentials(auth_token)
 
     if not creds:
