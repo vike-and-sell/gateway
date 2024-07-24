@@ -329,6 +329,7 @@ def update_user(http, auth_token, address, seeCharity):
             "lat": lat,
             "lng": lng,
         },
+        "charity": seeCharity
     })
 
     if result.status == 200:
