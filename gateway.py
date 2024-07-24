@@ -433,7 +433,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     if not creds:
         return make_unauthorized_response()
 
-    sort_by_validation = ["price", "created_on", "location"]
+    sort_by_validation = ["price", "created_on"]
     status_validation = ["AVAILABLE", "SOLD"]
 
     keywords = ""
@@ -765,10 +765,38 @@ def write_message(http, auth_token, chat_id, content) -> int:
 
     return make_internal_error_response()
 
-def get_search(http, auth_token, q):
+def get_search(http, auth_token, q, min_price, max_price, status, sort_by, descending):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+
+    sort_by_validation = ["price", "created_on"]
+    status_validation = ["AVAILABLE", "SOLD"]
+
+    if max_price is not None:
+        try:
+            max_price = float(max_price)
+        except ValueError:
+            return make_invalid_request_response("Invalid max_price value")
+
+        if 99999999.0 < max_price or max_price < 0.0:
+            return make_invalid_request_response("Invalid max_price value")
+    if min_price is not None:
+        try:
+            min_price = float(min_price)
+        except ValueError:
+            return make_invalid_request_response("Invalid min_price value")
+
+        if 99999999.0 < min_price or min_price < 0.0:
+            return make_invalid_request_response("Invalid min_price value")
+        if max_price is not None and min_price > max_price:
+            return make_invalid_request_response("minPrice must be less than maxPrice")
+    if status is not None:
+        if status not in status_validation:
+            return make_invalid_request_response("Invalid status value")
+    if sort_by is not None:
+        if sort_by not in sort_by_validation:
+            return make_invalid_request_response("Invalid sort by value")
 
     result = execute_data_post(http, f"/create_search", {
         "userId": creds,
@@ -794,6 +822,22 @@ def get_search(http, auth_token, q):
                 } for listing in listings]
             users = data.get("users")
             users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
+            if min_price:
+                listings_list = [listing for listing in listings_list if listing.get('price') > min_price]
+            if max_price:
+                listings_list = [listing for listing in listings_list if listing.get('price') < max_price]
+            if status:
+                listings_list = [listing for listing in listings_list if listing.get('status') == status]
+            if descending:
+                if sort_by == "price":
+                    listings_list.sort(key=lambda x: x.get('price'), reverse=True)
+                if sort_by == "created_on":
+                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=True)
+            else: 
+                if sort_by == "price":
+                    listings_list.sort(key=lambda x: x.get('price'), reverse=False)
+                if sort_by == "created_on":
+                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=False)
 
             return make_ok_response(body={"listings": listings_list, "users": users_list})
 
