@@ -557,7 +557,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address,
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username, charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -594,7 +594,8 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "address": postal_code,
             "latitude": lat,
             "longitude": lng,
-            "status": status
+            "status": status,
+            "charity": charity
         })
     if result.status == 200:
         return make_ok_response()
@@ -1082,7 +1083,6 @@ def verify_reset(http, token, password):
 
 def login(http, username, password):
     print(f"username: {username} password: {password}")
-    print(DATA_URL)
     res = execute_data_get(http, f"/get_user_info_for_login?usr={username}")
 
     if res.status != 200:
