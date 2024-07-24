@@ -46,7 +46,7 @@ def login():
     return make_response(result)
 
 
-@auth_bp.delete('/login')
+@auth_bp.get('/logout')
 def logout():
     result = gateway.logout()
     return make_response(result)
