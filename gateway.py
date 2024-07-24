@@ -24,7 +24,7 @@ def address_to_latlng(http, address):
     geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                                .format(MAPS_API_KEY, address))
 
-    print(geocode_raw)
+    print(address)
     if geocode_raw.status == 200:
         geocode = geocode_raw.json()
         if len(geocode["results"]) == 0:
@@ -33,6 +33,8 @@ def address_to_latlng(http, address):
         lat = pos["lat"]
         lng = pos["lon"]
         address = geocode["results"][0]["address"]
+        print(geocode)
+        print(address)
         postal_code = address["postalCode"]
         return (lat, lng, postal_code)
 
@@ -778,6 +780,7 @@ def write_message(http, auth_token, chat_id, content) -> int:
 
     return make_internal_error_response()
 
+
 def get_search(http, auth_token, q, min_price, max_price, status, sort_by, descending):
 
     creds = resolve_credentials(auth_token)
@@ -833,26 +836,34 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "location": listing.get('location'),
                 "status": listing.get('status'),
                 "listedAt": listing.get('created_on'),
-                } for listing in listings]
+            } for listing in listings]
             users = data.get("users")
-            users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
+            users_list = [{"userId": user.get('user_id'), "username": user.get(
+                'username')} for user in users]
 
             if min_price:
-                listings_list = [listing for listing in listings_list if listing.get('price') > min_price]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') > min_price]
             if max_price:
-                listings_list = [listing for listing in listings_list if listing.get('price') < max_price]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') < max_price]
             if status:
-                listings_list = [listing for listing in listings_list if listing.get('status') == status]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('status') == status]
             if descending:
                 if sort_by == "price":
-                    listings_list.sort(key=lambda x: x.get('price'), reverse=True)
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=True)
                 if sort_by == "created_on":
-                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=True)
-            else: 
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=True)
+            else:
                 if sort_by == "price":
-                    listings_list.sort(key=lambda x: x.get('price'), reverse=False)
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=False)
                 if sort_by == "created_on":
-                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=False)
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=False)
 
             return make_ok_response(body={"listings": listings_list, "users": users_list})
 
@@ -1121,6 +1132,13 @@ def login(http, username, password):
 
     print("invalid password")
     return make_invalid_request_response()
+
+
+def logout():
+    return make_ok_response(auth={
+        "jwt": "",
+        "exp": datetime.datetime.now(datetime.UTC)
+    })
 
 
 def not_implemented():
