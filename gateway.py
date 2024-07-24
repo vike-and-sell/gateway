@@ -507,7 +507,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     return make_internal_error_response()
 
 
-def create_listing(http: urllib3.PoolManager, auth_token, title, price, address):
+def create_listing(http: urllib3.PoolManager, auth_token, title, price, address, charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -517,7 +517,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
         return make_invalid_request_response("Invalid address")
 
     lat, lng, postal_code = pos
-    result = execute_data_post(http, f"/create_listing", {
+    request_body = {
         "sellerId": creds,
         "title": title,
         "price": price,
@@ -525,7 +525,11 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
         "longitude": lng,
         "address": postal_code,
         "status": 'AVAILABLE',
-    })
+    }
+    if charity:
+        request_body['charity'] = charity
+
+    result = execute_data_post(http, f"/create_listing", request_body)
     if result.status == 201:
         try:
             data = result.json()
@@ -534,12 +538,14 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
             price = data["price"]
             address = data["address"]
             status = data["status"]
+            charity = data["charity"]
             return make_created_response(body={
                 "listingId": listingId,
                 "title": title,
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": charity
             })
 
         except json.decoder.JSONDecodeError:
@@ -1076,6 +1082,7 @@ def verify_reset(http, token, password):
 
 def login(http, username, password):
     print(f"username: {username} password: {password}")
+    print(DATA_URL)
     res = execute_data_get(http, f"/get_user_info_for_login?usr={username}")
 
     if res.status != 200:

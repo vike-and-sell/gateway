@@ -14,7 +14,8 @@ def create_listing():
     title = request.json.get('title')
     price = request.json.get('price')
     address = request.json.get('address')
-    result = gateway.create_listing(http, auth_token, title, price, address)
+    charity = request.json.get('forCharity')
+    result = gateway.create_listing(http, auth_token, title, price, address, charity)
     return make_response(result)
 
 
