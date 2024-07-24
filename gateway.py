@@ -162,6 +162,15 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             else:
                 items_purchased = items_purchased.json()
 
+            items_listed = execute_data_get(http,
+                                            f"/get_listing_by_seller?userId={user_id}")
+            if items_listed.status != 200:
+                print("could not get items listed by user {}, status: {}".format(
+                    user_id, items_purchased.status))
+                items_listed = []
+            else:
+                items_listed = items_listed.json()
+
             return make_ok_response(body={
                 "userId": user_id,
                 "username": username,
@@ -169,6 +178,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
                 "joiningDate": joining_date,
                 "itemsSold": items_sold,
                 "itemsPurchased": items_purchased,
+                "activeListings": items_listed,
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
