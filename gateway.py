@@ -574,7 +574,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
                 "buyerUsername": buyer_username
             })
         if result.status != 200:
-            make_invalid_request_response("Invalid buyerUsername")
+            return make_invalid_request_response("Invalid buyerUsername")
 
     lat = None
     lng = None
