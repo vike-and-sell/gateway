@@ -204,6 +204,7 @@ def test_get_user_by_me_success_path():
         "joining_date": "2000-01-01T00:00:00+00:00",
         "items_sold": [12345, 67890],
         "items_purchased": [56789, 98765],
+        "charity": False
     })
     when(http).request("GET", f"{DATA_URL}/get_user?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -242,6 +243,7 @@ def test_get_user_by_me_success_path():
             "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": [12345, 67890],
             "itemsPurchased": [56789, 98765],
+            "seeCharity": False
         })
     }
     actual = gateway.get_user_by_auth_token(http, token)
