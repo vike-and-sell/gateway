@@ -20,6 +20,7 @@ def test_get_user_by_id_success_path():
         "address": "V8W",
         # jan 1, 2000 12am GMT
         "joining_date": "2000-01-01T00:00:00+00:00",
+        "charity": False
     })
     when(http).request("GET", f"{DATA_URL}/get_user?userId=5678", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -132,7 +133,8 @@ def test_update_user_by_id_success_path():
         "location": {
             "lat": 123,
             "lng": 456
-        }
+        },
+        "charity": False
     }, headers={
         "X-Api-Key": DATA_API_KEY
     }).thenReturn(response)
@@ -144,7 +146,7 @@ def test_update_user_by_id_success_path():
         "statusCode": 200,
     }
     actual = gateway.update_user(
-        http, token, "500 Fort St, Victoria, BC V8W 1E5")
+        http, token, "500 Fort St, Victoria, BC V8W 1E5", False)
     assert expected == actual
 
 
@@ -155,10 +157,10 @@ def test_update_user_by_id_invalid_creds():
         "statusCode": 401,
     }
     actual = gateway.update_user(
-        http, None, "500 Fort St, Victoria, BC V8W 1E5")
+        http, None, "500 Fort St, Victoria, BC V8W 1E5", True)
     assert expected == actual
     actual = gateway.update_user(http, sign_jwt_for_test(
-        {}), "500 Fort St, Victoria, BC V8W 1E5")
+        {}), "500 Fort St, Victoria, BC V8W 1E5", True)
     assert expected == actual
 
 
@@ -186,7 +188,7 @@ def test_update_user_by_id_invalid_address():
         })
     }
     actual = gateway.update_user(
-        http, token, address)
+        http, token, address, False)
     assert expected == actual
 
 
