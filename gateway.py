@@ -160,6 +160,15 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             else:
                 items_purchased = items_purchased.json()
 
+            items_listed = execute_data_get(http,
+                                            f"/get_listing_by_seller?userId={user_id}")
+            if items_listed.status != 200:
+                print("could not get items listed by user {}, status: {}".format(
+                    user_id, items_purchased.status))
+                items_listed = []
+            else:
+                items_listed = items_listed.json()
+
             return make_ok_response(body={
                 "userId": user_id,
                 "username": username,
@@ -167,6 +176,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
                 "joiningDate": joining_date,
                 "itemsSold": items_sold,
                 "itemsPurchased": items_purchased,
+                "activeListings": items_listed,
             })
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
@@ -778,6 +788,7 @@ def write_message(http, auth_token, chat_id, content) -> int:
 
     return make_internal_error_response()
 
+
 def get_search(http, auth_token, q, min_price, max_price, status, sort_by, descending):
 
     creds = resolve_credentials(auth_token)
@@ -833,26 +844,34 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "location": listing.get('location'),
                 "status": listing.get('status'),
                 "listedAt": listing.get('created_on'),
-                } for listing in listings]
+            } for listing in listings]
             users = data.get("users")
-            users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
+            users_list = [{"userId": user.get('user_id'), "username": user.get(
+                'username')} for user in users]
 
             if min_price:
-                listings_list = [listing for listing in listings_list if listing.get('price') > min_price]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') > min_price]
             if max_price:
-                listings_list = [listing for listing in listings_list if listing.get('price') < max_price]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') < max_price]
             if status:
-                listings_list = [listing for listing in listings_list if listing.get('status') == status]
+                listings_list = [
+                    listing for listing in listings_list if listing.get('status') == status]
             if descending:
                 if sort_by == "price":
-                    listings_list.sort(key=lambda x: x.get('price'), reverse=True)
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=True)
                 if sort_by == "created_on":
-                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=True)
-            else: 
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=True)
+            else:
                 if sort_by == "price":
-                    listings_list.sort(key=lambda x: x.get('price'), reverse=False)
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=False)
                 if sort_by == "created_on":
-                    listings_list.sort(key=lambda x: x.get('listedAt'), reverse=False)
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=False)
 
             return make_ok_response(body={"listings": listings_list, "users": users_list})
 
