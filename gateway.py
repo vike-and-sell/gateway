@@ -361,6 +361,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
             status = data["status"]
             listedAt = data["listedAt"]
             lastUpdatedAt = data["lastUpdatedAt"]
+            charity = data["charity"]
 
             return make_ok_response(body={
                 "sellerId": sellerId,
@@ -369,6 +370,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": charity,
                 "listedAt": listedAt,
                 "lastUpdatedAt": lastUpdatedAt,
             })
@@ -401,6 +403,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -411,6 +414,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
@@ -481,6 +485,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -491,6 +496,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
