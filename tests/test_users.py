@@ -56,8 +56,8 @@ def test_get_user_by_id_success_path():
             "username": "bob1",
             "location": "V8W",
             "joiningDate": "2000-01-01T00:00:00+00:00",
-            "itemsSold": ["12345", "67890"],
-            "itemsPurchased": ["56789", "98765"],
+            "itemsSold": [12345, 67890],
+            "itemsPurchased": [56789, 98765],
         })
     }
     actual = gateway.get_user_by_id(http, token, 5678)
@@ -143,23 +143,8 @@ def test_update_user_by_id_success_path():
     expected = {
         "statusCode": 200,
     }
-    actual = gateway.update_user_by_id(
-        http, token, 5678, "500 Fort St, Victoria, BC V8W 1E5")
-    assert expected == actual
-
-
-def test_update_user_by_id_wrong_token_uid():
-    http = mock(urllib3.PoolManager())
-    token = sign_jwt_for_test({
-        "uid": 5678
-    })
-
-    expected = {
-        "statusCode": 401,
-    }
-    actual = gateway.update_user_by_id(
-        http, token, 1234, "500 Fort St, Victoria, BC V8W 1E5")
-
+    actual = gateway.update_user(
+        http, token, "500 Fort St, Victoria, BC V8W 1E5")
     assert expected == actual
 
 
@@ -169,11 +154,11 @@ def test_update_user_by_id_invalid_creds():
     expected = {
         "statusCode": 401,
     }
-    actual = gateway.update_user_by_id(
-        http, None, 5678, "500 Fort St, Victoria, BC V8W 1E5")
+    actual = gateway.update_user(
+        http, None, "500 Fort St, Victoria, BC V8W 1E5")
     assert expected == actual
-    actual = gateway.update_user_by_id(http, sign_jwt_for_test(
-        {}), 5678, "500 Fort St, Victoria, BC V8W 1E5")
+    actual = gateway.update_user(http, sign_jwt_for_test(
+        {}), "500 Fort St, Victoria, BC V8W 1E5")
     assert expected == actual
 
 
@@ -200,8 +185,8 @@ def test_update_user_by_id_invalid_address():
             "message": "Invalid address"
         })
     }
-    actual = gateway.update_user_by_id(
-        http, token, 5678, address)
+    actual = gateway.update_user(
+        http, token, address)
     assert expected == actual
 
 
@@ -255,8 +240,8 @@ def test_get_user_by_me_success_path():
             "username": "bob1",
             "location": "V8W",
             "joiningDate": "2000-01-01T00:00:00+00:00",
-            "itemsSold": ["12345", "67890"],
-            "itemsPurchased": ["56789", "98765"],
+            "itemsSold": [12345, 67890],
+            "itemsPurchased": [56789, 98765],
         })
     }
     actual = gateway.get_user_by_auth_token(http, token)
@@ -299,7 +284,7 @@ def test_get_user_search_history_success_path():
         "statusCode": 200,
         "body": json.dumps(["bike", "car", "textbook"])
     }
-    actual = gateway.get_search_history_by_id(http, token, 5678)
+    actual = gateway.get_search_history(http, token)
     assert expected == actual
 
 
@@ -310,9 +295,9 @@ def test_get_user_by_me_invalid_creds():
         "statusCode": 401,
     }
 
-    actual = gateway.get_search_history_by_id(http, None, 1234)
+    actual = gateway.get_search_history(http, None)
     assert expected == actual
 
-    actual = gateway.get_search_history_by_id(
-        http, sign_jwt_for_test({}), 1234)
+    actual = gateway.get_search_history(
+        http, sign_jwt_for_test({}))
     assert expected == actual

@@ -99,15 +99,10 @@ export class GatewayStack extends Stack {
 
     // Users
     this.route(HttpMethod.GET, "/users/{userId}", "get_user");
-    this.route(HttpMethod.PATCH, "/users/{userId}", "update_user");
-
-    this.route(
-      HttpMethod.GET,
-      "/users/{userId}/searches",
-      "get_search_history",
-    );
 
     this.route(HttpMethod.GET, "/users/me", "my_user");
+    this.route(HttpMethod.PATCH, "/users/me", "update_user");
+    this.route(HttpMethod.GET, "/users/me/searches", "get_search_history");
 
     // Ratings & Reviews
     this.route(HttpMethod.GET, "/review/{listingId}", "get_reviews");
