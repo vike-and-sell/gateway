@@ -36,6 +36,7 @@ def test_create_listing_success():
         "price": 100.00,
         "address": "V8W",
         "status": "AVAILABLE",
+        "for_charity": False,
     })
     when(http).request("POST", f"{DATA_URL}/create_listing", json={
         "sellerId": 5678,
@@ -45,6 +46,7 @@ def test_create_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
+        "forCharity": False,
 
     }, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -60,9 +62,10 @@ def test_create_listing_success():
             "price": 100.00,
             "location": "V8W",
             "status": "AVAILABLE",
+            "forCharity": False,
         })
     }
-    actual = gateway.create_listing(http, token, "Chair", 100.00, address)
+    actual = gateway.create_listing(http, token, "Chair", 100.00, address, for_charity=False)
     assert expected == actual
 
 
@@ -100,6 +103,7 @@ def test_create_listing_fail():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
+        "forCharity": False,
 
     }, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -115,7 +119,7 @@ def test_create_listing_fail():
         }),
     }
 
-    actual = gateway.create_listing(http, token, "", 100.00, address)
+    actual = gateway.create_listing(http, token, "", 100.00, address, for_charity=False)
     assert expected == actual
 
 
@@ -154,6 +158,7 @@ def test_patch_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
+        "forCharity": False,
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -164,7 +169,7 @@ def test_patch_listing_success():
         "statusCode": 200,
     }
     actual = gateway.update_listing(
-        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE", None)
+        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE", None, for_charity=False)
     assert expected == actual
 
 
@@ -200,6 +205,7 @@ def test_patch_listing_fail():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
+        "forCharity": False,
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -213,7 +219,7 @@ def test_patch_listing_fail():
         }),
     }
     actual = gateway.update_listing(
-        http, token, 1111, "", 10.00, address, "AVAILABLE", None)
+        http, token, 1111, "", 10.00, address, "AVAILABLE", None, for_charity=False)
     assert expected == actual
 
 
@@ -276,6 +282,7 @@ def test_get_sorted_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
@@ -287,6 +294,7 @@ def test_get_sorted_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
@@ -308,6 +316,7 @@ def test_get_sorted_listings_success():
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
+                "forCharity": False,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
@@ -318,6 +327,7 @@ def test_get_sorted_listings_success():
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
+                "forCharity": False,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
@@ -369,6 +379,7 @@ def test_get_listing_by_id_success():
         "location": "12.3456,78.9012",
         "address": "V8W",
         "status": "AVAILABLE",
+        "for_charity": False,
         "listedAt": "2021-01-01T00:00:00Z",
         "lastUpdatedAt": "2021-01-01T00:00:00Z",
     })
@@ -387,6 +398,7 @@ def test_get_listing_by_id_success():
             "price": 100.00,
             "location": "V8W",
             "status": "AVAILABLE",
+            "forCharity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
         })
@@ -430,6 +442,7 @@ def test_get_my_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
@@ -441,6 +454,7 @@ def test_get_my_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
         },
@@ -462,6 +476,7 @@ def test_get_my_listings_success():
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
+                "forCharity": False,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
@@ -472,6 +487,7 @@ def test_get_my_listings_success():
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
+                "forCharity": False,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },

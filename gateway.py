@@ -512,7 +512,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     return make_internal_error_response()
 
 
-def create_listing(http: urllib3.PoolManager, auth_token, title, price, address):
+def create_listing(http: urllib3.PoolManager, auth_token, title, price, address, for_charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -530,6 +530,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
         "longitude": lng,
         "address": postal_code,
         "status": 'AVAILABLE',
+        "forCharity": for_charity,
     })
     if result.status == 201:
         try:
@@ -539,12 +540,14 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
             price = data["price"]
             address = data["address"]
             status = data["status"]
+            forCharity = data["for_charity"]
             return make_created_response(body={
                 "listingId": listingId,
                 "title": title,
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": forCharity,
             })
 
         except json.decoder.JSONDecodeError:
