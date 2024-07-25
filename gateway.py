@@ -160,25 +160,17 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
             else:
                 items_purchased = items_purchased.json()
 
-            if not includeCharity:
-                return make_ok_response(body={
-                    "userId": user_id,
-                    "username": username,
-                    "location": address,
-                    "joiningDate": joining_date,
-                    "itemsSold": items_sold,
-                    "itemsPurchased": items_purchased,
-                })
-            else:
-                return make_ok_response(body={
-                    "userId": user_id,
-                    "username": username,
-                    "location": address,
-                    "joiningDate": joining_date,
-                    "itemsSold": items_sold,
-                    "itemsPurchased": items_purchased,
-                    "seeCharity": charity
-                })
+            request_body = {
+                "userId": user_id,
+                "username": username,
+                "location": address,
+                "joiningDate": joining_date,
+                "itemsSold": items_sold,
+                "itemsPurchased": items_purchased,
+            }
+            if includeCharity:
+                request_body["seeCharity"] = charity
+            return make_ok_response(body=request_body)
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
