@@ -13,9 +13,10 @@ def create_listing():
     auth_token = request.cookies.get("Authorization")
     title = request.json.get('title')
     price = request.json.get('price')
-    address = request.json.get('address')
-    for_charity = request.json.get('forCharity')
-    result = gateway.create_listing(http, auth_token, title, price, address, for_charity)
+    charity = request.json.get('forCharity')
+    address = request.json.get('location')
+    result = gateway.create_listing(
+        http, auth_token, title, price, address, charity)
     return make_response(result)
 
 
@@ -24,12 +25,12 @@ def patch_listing(listing_id):
     auth_token = request.cookies.get("Authorization")
     title = request.json.get('title')
     price = request.json.get('price')
-    address = request.json.get('address')
+    address = request.json.get('location')
     status = request.json.get('status')
     buyer_user_name = request.json.get('buyerUsername')
-    for_charity = request.json.get('forCharity')
+    charity = request.json.get('forCharity')
     result = gateway.update_listing(
-        http, auth_token, listing_id, title, price, address, status, buyer_user_name, for_charity)
+        http, auth_token, listing_id, title, price, address, status, buyer_user_name, charity)
     return make_response(result)
 
 
@@ -53,13 +54,13 @@ def get_listings():
         is_descending = True
     else:
         is_descending = False
-    
+
     if min_price:
         min_price = float(min_price)
     if max_price:
         max_price = float(max_price)
-    result = gateway.get_sorted_listings(http, auth_token, 
-        max_price, min_price, status, sort_by, is_descending)
+    result = gateway.get_sorted_listings(http, auth_token,
+                                         max_price, min_price, status, sort_by, is_descending)
     return make_response(result)
 
 

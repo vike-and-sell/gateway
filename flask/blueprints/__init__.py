@@ -9,6 +9,7 @@ from .chats import chats_bp
 from .messages import messages_bp
 from .charity import charity_bp
 
+
 def init_app(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp, url_prefix='/users')

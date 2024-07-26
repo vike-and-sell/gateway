@@ -36,7 +36,7 @@ def test_create_listing_success():
         "price": 100.00,
         "address": "V8W",
         "status": "AVAILABLE",
-        "for_charity": False,
+        "charity": False
     })
     when(http).request("POST", f"{DATA_URL}/create_listing", json={
         "sellerId": 5678,
@@ -46,8 +46,6 @@ def test_create_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "forCharity": False,
-
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -62,10 +60,10 @@ def test_create_listing_success():
             "price": 100.00,
             "location": "V8W",
             "status": "AVAILABLE",
-            "forCharity": False,
-        })
+            "forCharity": False
+        }),
     }
-    actual = gateway.create_listing(http, token, "Chair", 100.00, address, for_charity=False)
+    actual = gateway.create_listing(http, token, "Chair", 100.00, address, False)
     assert expected == actual
 
 
@@ -103,8 +101,7 @@ def test_create_listing_fail():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "forCharity": False,
-
+        "charity": True
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -119,7 +116,7 @@ def test_create_listing_fail():
         }),
     }
 
-    actual = gateway.create_listing(http, token, "", 100.00, address, for_charity=False)
+    actual = gateway.create_listing(http, token, "", 100.00, address, True)
     assert expected == actual
 
 
@@ -158,7 +155,7 @@ def test_patch_listing_success():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "forCharity": False,
+        "charity": None
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -169,7 +166,7 @@ def test_patch_listing_success():
         "statusCode": 200,
     }
     actual = gateway.update_listing(
-        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE", None, for_charity=False)
+        http, token, 1111, "Table", 10.00, "500 Fort St, Victoria, BC V8W 1E5", "AVAILABLE", None, None)
     assert expected == actual
 
 
@@ -205,7 +202,7 @@ def test_patch_listing_fail():
         "longitude": 78.9012,
         "address": "V8W",
         "status": "AVAILABLE",
-        "forCharity": False,
+        "charity": None
     }, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
@@ -219,7 +216,7 @@ def test_patch_listing_fail():
         }),
     }
     actual = gateway.update_listing(
-        http, token, 1111, "", 10.00, address, "AVAILABLE", None, for_charity=False)
+        http, token, 1111, "", 10.00, address, "AVAILABLE", None, None)
     assert expected == actual
 
 
@@ -285,10 +282,11 @@ def test_get_sorted_listings_success():
             "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "charity": False
         },
         {
             "sellerId": 3333,
-            "listingId": 1111,
+            "listingId": 1112,
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
@@ -297,6 +295,7 @@ def test_get_sorted_listings_success():
             "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "charity": True
         },
 
     ])
@@ -322,12 +321,12 @@ def test_get_sorted_listings_success():
             },
             {
                 "sellerId": 3333,
-                "listingId": 1111,
+                "listingId": 1112,
                 "title": "Chair",
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
-                "forCharity": False,
+                "forCharity": True,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },
@@ -382,6 +381,7 @@ def test_get_listing_by_id_success():
         "for_charity": False,
         "listedAt": "2021-01-01T00:00:00Z",
         "lastUpdatedAt": "2021-01-01T00:00:00Z",
+        "charity": False
     })
     when(http).request("GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
@@ -445,10 +445,11 @@ def test_get_my_listings_success():
             "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "charity": False
         },
         {
             "sellerId": 3333,
-            "listingId": 1111,
+            "listingId": 1112,
             "title": "Chair",
             "price": 100.00,
             "location": "12.3456,78.9012",
@@ -457,6 +458,7 @@ def test_get_my_listings_success():
             "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
+            "charity": True
         },
 
     ])
@@ -482,12 +484,12 @@ def test_get_my_listings_success():
             },
             {
                 "sellerId": 3333,
-                "listingId": 1111,
+                "listingId": 1112,
                 "title": "Chair",
                 "price": 100.00,
                 "location": "V8W",
                 "status": "AVAILABLE",
-                "forCharity": False,
+                "forCharity": True,
                 "listedAt": "2021-01-01T00:00:00Z",
                 "lastUpdatedAt": "2021-01-01T00:00:00Z",
             },

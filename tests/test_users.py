@@ -45,6 +45,16 @@ def test_get_user_by_id_success_path():
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
+    active_listings_response = mock({
+        "status": 200,
+    })
+    when(active_listings_response).json().thenReturn(
+        [9876, 8765]
+    )
+    when(http).request("GET", f"{DATA_URL}/get_listing_by_seller?userId=5678", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(active_listings_response)
+
     token = sign_jwt_for_test({
         "uid": 1234
     })
@@ -58,6 +68,7 @@ def test_get_user_by_id_success_path():
             "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": [12345, 67890],
             "itemsPurchased": [56789, 98765],
+            "activeListings": [9876, 8765],
         })
     }
     actual = gateway.get_user_by_id(http, token, 5678)
@@ -229,6 +240,16 @@ def test_get_user_by_me_success_path():
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(purchases_response)
 
+    active_listings_response = mock({
+        "status": 200,
+    })
+    when(active_listings_response).json().thenReturn(
+        [9876, 8765]
+    )
+    when(http).request("GET", f"{DATA_URL}/get_listing_by_seller?userId=5678", json=None, headers={
+        "X-Api-Key": DATA_API_KEY,
+    }).thenReturn(active_listings_response)
+
     token = sign_jwt_for_test({
         "uid": 5678
     })
@@ -242,6 +263,7 @@ def test_get_user_by_me_success_path():
             "joiningDate": "2000-01-01T00:00:00+00:00",
             "itemsSold": [12345, 67890],
             "itemsPurchased": [56789, 98765],
+            "activeListings": [9876, 8765]
         })
     }
     actual = gateway.get_user_by_auth_token(http, token)

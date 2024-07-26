@@ -1,4 +1,3 @@
-
 from shared import get_auth_token, get_body, mould_response
 import gateway
 import urllib3

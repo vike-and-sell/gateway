@@ -85,6 +85,7 @@ export class GatewayStack extends Stack {
     this.route(HttpMethod.POST, "/verify_reset", "verify_reset");
 
     this.route(HttpMethod.POST, "/login", "login");
+    this.route(HttpMethod.GET, "/logout", "logout");
 
     // Listings
 

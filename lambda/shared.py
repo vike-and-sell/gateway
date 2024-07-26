@@ -1,3 +1,4 @@
+import datetime
 from http.cookies import SimpleCookie
 import json
 
@@ -40,7 +41,10 @@ def mould_response(gateway_response):
     if auth:
         c = SimpleCookie()
         c["Authorization"] = auth["jwt"]
-        c["Authorization"]["expires"] = 10800  # 3 hours in seconds
+        seconds = round((auth["exp"] -
+                        datetime.datetime.now(datetime.UTC)).total_seconds())
+        print(seconds)
+        c["Authorization"]["expires"] = seconds
         c["Authorization"]["samesite"] = "None"
         c["Authorization"]["httponly"] = True
         c["Authorization"]["secure"] = True
