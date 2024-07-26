@@ -845,7 +845,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "price": listing.get('price'),
                 "location": listing.get('location'),
                 "status": listing.get('status'),
-                "forCharity": listing.get('for_charity'),
+                "forCharity": listing.get('charity'),
                 "listedAt": listing.get('created_on'),
             } for listing in listings]
             users = data.get("users")
@@ -906,7 +906,7 @@ def get_recommendations(http, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
-                forCharity = listing["for_charity"]
+                charity = listing["charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -916,7 +916,7 @@ def get_recommendations(http, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
-                    "forCharity": forCharity,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
