@@ -1184,6 +1184,7 @@ def get_charities(http: urllib3.PoolManager, auth_token):
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
+            print(e)
             make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("Charities not found")
