@@ -65,7 +65,15 @@ export class GatewayStack extends Stack {
           "https://localhost:5173", // allow local dev if it's on https
         ],
         allowHeaders: ["content-type"],
-        allowMethods: [CorsHttpMethod.ANY],
+        allowMethods: [
+          CorsHttpMethod.GET,
+          CorsHttpMethod.PATCH,
+          CorsHttpMethod.PUT,
+          CorsHttpMethod.POST,
+          CorsHttpMethod.DELETE,
+          CorsHttpMethod.OPTIONS,
+          CorsHttpMethod.HEAD,
+        ],
         allowCredentials: true,
       },
       defaultDomainMapping: this.domain
