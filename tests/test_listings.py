@@ -279,6 +279,7 @@ def test_get_sorted_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
             "charity": False
@@ -291,6 +292,7 @@ def test_get_sorted_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
             "charity": True
@@ -376,6 +378,7 @@ def test_get_listing_by_id_success():
         "location": "12.3456,78.9012",
         "address": "V8W",
         "status": "AVAILABLE",
+        "for_charity": False,
         "listedAt": "2021-01-01T00:00:00Z",
         "lastUpdatedAt": "2021-01-01T00:00:00Z",
         "charity": False
@@ -439,6 +442,7 @@ def test_get_my_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
             "charity": False
@@ -451,6 +455,7 @@ def test_get_my_listings_success():
             "location": "12.3456,78.9012",
             "address": "V8W",
             "status": "AVAILABLE",
+            "for_charity": False,
             "listedAt": "2021-01-01T00:00:00Z",
             "lastUpdatedAt": "2021-01-01T00:00:00Z",
             "charity": True

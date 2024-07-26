@@ -593,7 +593,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
                 "buyerUsername": buyer_username
             })
         if result.status != 200:
-            make_invalid_request_response("Invalid buyerUsername")
+            return make_invalid_request_response("Invalid buyerUsername")
 
     lat = None
     lng = None
@@ -845,6 +845,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "price": listing.get('price'),
                 "location": listing.get('location'),
                 "status": listing.get('status'),
+                "forCharity": listing.get('charity'),
                 "listedAt": listing.get('created_on'),
             } for listing in listings]
             users = data.get("users")
@@ -905,6 +906,7 @@ def get_recommendations(http, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -914,6 +916,7 @@ def get_recommendations(http, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
@@ -1143,6 +1146,50 @@ def login(http, username, password):
     print("invalid password")
     return make_invalid_request_response()
 
+def get_charities(http: urllib3.PoolManager, auth_token):
+    print("getting charities")
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, "/get_charities")
+    if result.status == 200:
+        try:
+            data = result.json()
+            charities_list = []
+
+            for charity in data:
+                charityId = charity["charity_id"]
+                name = charity["name"]
+                status = charity["status"]
+                fund = charity["fund"]
+                logoUrl = charity["logo_url"]
+                startDate = charity["start_date"]
+                endDate = charity["end_date"]
+                numListings = charity["num_listings"]
+
+                charities_list.append({
+                    "charityId": charityId,
+                    "name": name,
+                    "status": status,
+                    "fund": fund,
+                    "logoUrl": logoUrl,
+                    "startDate": startDate,
+                    "endDate": endDate,
+                    "numListings": numListings
+                })
+
+            return make_ok_response(body=charities_list)
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            print(e)
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Charities not found")
+
+    return make_internal_error_response()
 
 def logout():
     return make_ok_response(auth={
