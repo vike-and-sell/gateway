@@ -11,6 +11,6 @@ def handler(event, context):
     token = body.get('jwt')
     username = body.get('username')
     password = body.get('password')
-    address = body.get('address')
+    address = body.get('location')
     result = gateway.verify_account(http, token, username, password, address)
     return mould_response(result)
