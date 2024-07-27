@@ -63,7 +63,8 @@ def test_create_listing_success():
             "forCharity": False
         }),
     }
-    actual = gateway.create_listing(http, token, "Chair", 100.00, address, False)
+    actual = gateway.create_listing(
+        http, token, "Chair", 100.00, address, False)
     assert expected == actual
 
 
@@ -267,6 +268,21 @@ def test_get_sorted_listings_success():
     status = "AVAILABLE"
 
     http = mock(urllib3.PoolManager())
+
+    user_response = mock({
+        "status": 200,
+    })
+    when(user_response).json().thenReturn({
+        "location": {
+            "lat": 123.456,
+            "lng": 789.123,
+        }
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_user?userId=5678", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(user_response)
+
     response = mock({
         "status": 200,
     })
@@ -299,7 +315,7 @@ def test_get_sorted_listings_success():
         },
 
     ])
-    when(http).request("GET", f"{DATA_URL}/get_listings?maxPrice=1000.0&status=AVAILABLE&isDescending=False", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?maxPrice=1000.0&status=AVAILABLE&isDescending=False&lat=123.456&lng=789.123", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
@@ -345,10 +361,25 @@ def test_get_sorted_listings_fail():
     is_descending = False
 
     http = mock(urllib3.PoolManager())
+
+    user_response = mock({
+        "status": 200,
+    })
+    when(user_response).json().thenReturn({
+        "location": {
+            "lat": 123.456,
+            "lng": 789.123,
+        }
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_user?userId=5678", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(user_response)
+
     response = mock({
         "status": 404,
     })
-    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE&sortBy=created_on&isDescending=False", json=None, headers={
+    when(http).request("GET", f"{DATA_URL}/get_listings?status=AVAILABLE&sortBy=created_on&isDescending=False&lat=123.456&lng=789.123", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
     token = sign_jwt_for_test({
