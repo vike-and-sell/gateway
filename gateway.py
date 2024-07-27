@@ -839,6 +839,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
         return make_internal_error_response()
     result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
+        try:
             data = result.json()
             listings_list = []
             listings = data.get("listings")
@@ -883,10 +884,10 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
 
             return make_ok_response(body={"listings": listings_list, "users": users_list})
 
-        # except json.decoder.JSONDecodeError:
-        #     return make_not_found_response()
-        # except Exception as e:
-        #     make_internal_error_response()
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
 
     return make_internal_error_response()
 
