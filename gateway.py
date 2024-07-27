@@ -491,7 +491,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
 
             listings_list = []
 
-            for listing in islice(data, offset, offset + 100):
+            for listing in islice(data, offset, offset + 30):
                 sellerId = listing["sellerId"]
                 listingId = listing["listingId"]
                 title = listing["title"]
