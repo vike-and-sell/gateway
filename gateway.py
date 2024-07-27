@@ -133,6 +133,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
         return make_unauthorized_response()
 
     result = execute_data_get(http, f"/get_user?userId={user_id}")
+    print(f"get_user result: {result.status}")
     if result.status == 200:
         try:
             print('start of data processing')
@@ -148,6 +149,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
 
             items_sold = execute_data_get(http,
                                           f"/get_user_sales?userId={user_id}")
+            print(items_sold)
             if items_sold.status != 200:
                 print("could not get items sold by user {}, status: {}".format(
                     user_id, items_sold.status))
@@ -155,6 +157,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
             else:
                 items_sold = items_sold.json()
 
+            print(f"items sold: {items_sold}")
             items_purchased = execute_data_get(http,
                                                f"/get_user_purchases?userId={user_id}")
             if items_purchased.status != 200:
@@ -164,14 +167,18 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
             else:
                 items_purchased = items_purchased.json()
 
+            print(f"items purchased: {items_purchased}")
+
             items_listed = execute_data_get(http,
                                             f"/get_listing_by_seller?userId={user_id}")
             if items_listed.status != 200:
                 print("could not get items listed by user {}, status: {}".format(
-                    user_id, items_purchased.status))
+                    user_id, items_listed.status))
                 items_listed = []
             else:
                 items_listed = items_listed.json()
+
+            print(f"active listings: {items_listed}")
 
             response_body = {
                 "userId": user_id,
@@ -502,6 +509,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     print(keywords)
 
     result = execute_data_get(http, f"/get_listings?{keywords}")
+    print(result.status)
     if result.status == 200:
         try:
             data = result.json()
@@ -549,7 +557,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address,
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
-    
+
     if price < 0:
         return make_invalid_request_response("Negative price")
 
