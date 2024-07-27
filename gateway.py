@@ -456,7 +456,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     if not creds:
         return make_unauthorized_response()
 
-    sort_by_validation = ["price", "created_on"]
+    sort_by_validation = ["price", "created_on", "distance"]
     status_validation = ["AVAILABLE", "SOLD"]
 
     user_lookup_result = execute_data_get(http, f"/get_user?userId={creds}")
