@@ -781,33 +781,35 @@ def get_search(http, auth_token, q):
     })
     if result.status != 200:
         return make_internal_error_response()
+
     result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
-            data = result.json()
-            listings_list = []
-            listings = data.get("listings")
+        data = result.json()
+        listings_list = []
+        listings = data.get("listings")
 
-            listings_list = [{
-                "sellerId": listing.get('seller_id'),
-                "listingId": listing.get('listing_id'),
-                "title": listing.get('title'),
-                "price": listing.get('price'),
-                "location": listing.get('location'),
-                "status": listing.get('status'),
-                "listedAt": listing.get('created_on'),
-                } for listing in listings]
-            users = data.get("users")
-            users_list = [{"userId": user.get('user_id'), "username": user.get('username')} for user in users]
-            for user in users:
-                user_id = user["user_id"]
-                username = user["username"]
-                users_list.append({
-                    "userId": user_id,
-                    "username": username
-                })
+        listings_list = [{
+            "sellerId": listing.get('seller_id'),
+            "listingId": listing.get('listing_id'),
+            "title": listing.get('title'),
+            "price": listing.get('price'),
+            "location": listing.get('location'),
+            "status": listing.get('status'),
+            "listedAt": listing.get('created_on'),
+        } for listing in listings]
+        users = data.get("users")
+        users_list = [{"userId": user.get('user_id'), "username": user.get(
+            'username')} for user in users]
+        for user in users:
+            user_id = user["user_id"]
+            username = user["username"]
+            users_list.append({
+                "userId": user_id,
+                "username": username
+            })
 
-            return make_ok_response(body={"listings": listings_list, "users": users_list})
-
+        return make_ok_response(body={"listings": listings_list, "users": users_list})
+    return make_internal_error_response()
 
 
 def get_recommendations(http, auth_token):
