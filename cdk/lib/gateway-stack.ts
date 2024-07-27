@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
@@ -148,6 +148,7 @@ export class GatewayStack extends Stack {
       code: Code.fromAsset(`packaging/${handlerName}.zip`),
       handler: `${handlerName}.handler`,
       layers: [this.layer],
+      timeout: Duration.seconds(30),
       environment: {
         DATA_URL: process.env.DATA_URL ?? "",
         DATA_API_KEY: process.env.DATA_API_KEY ?? "",
