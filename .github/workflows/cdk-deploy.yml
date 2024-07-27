@@ -1,4 +1,6 @@
 name: AWS CDK deploy
+concurrency:
+  group: ${{ github.workflow }}
 on:
   push:
     branches:
