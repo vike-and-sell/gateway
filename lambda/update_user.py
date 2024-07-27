@@ -10,5 +10,6 @@ def handler(event, context):
     auth_token = get_auth_token(event)
     body = get_body(event)
     address = body.get('location')
-    result = gateway.update_user(http, auth_token, address)
+    charity = body.get('seeCharity')
+    result = gateway.update_user(http, auth_token, address, charity)
     return mould_response(result)

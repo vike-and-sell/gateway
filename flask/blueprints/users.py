@@ -12,7 +12,7 @@ users_bp = Blueprint('user', __name__)
 def patch_user():
     auth_token = request.cookies.get("Authorization")
     result = gateway.update_user(
-        http, auth_token, request.json.get("location"))
+        http, auth_token, request.json.get("location"), request.json.get('seeCharity'))
     return make_response(result)
 
 

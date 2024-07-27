@@ -127,7 +127,7 @@ def execute_data_delete(http, path):
     return execute_data_request(http, path, "DELETE", None)
 
 
-def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
+def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharity=False):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -141,6 +141,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             username = data["username"]
             address = data["address"]
             joining_date = data["joining_date"]
+            charity = data["charity"]
 
             print(type(joining_date))
             print('parsing address to postal code')
@@ -172,7 +173,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
             else:
                 items_listed = items_listed.json()
 
-            return make_ok_response(body={
+            response_body = {
                 "userId": user_id,
                 "username": username,
                 "location": address,
@@ -180,7 +181,10 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id):
                 "itemsSold": items_sold,
                 "itemsPurchased": items_purchased,
                 "activeListings": items_listed,
-            })
+            }
+            if includeCharity:
+                response_body["seeCharity"] = charity
+            return make_ok_response(body=response_body)
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
@@ -200,7 +204,7 @@ def get_user_by_auth_token(http, auth_token):
 
     print(f"userid: {creds}")
 
-    return get_user_by_id(http, auth_token, creds)
+    return get_user_by_id(http, auth_token, creds, True)
 
 
 def get_ratings_by_listing_id(http, auth_token, listing_id: int):
@@ -311,7 +315,7 @@ def post_review_by_listing_id(http, auth_token, listing_id: int, review):
     return make_internal_error_response()
 
 
-def update_user(http, auth_token, address):
+def update_user(http, auth_token, address, seeCharity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -319,6 +323,8 @@ def update_user(http, auth_token, address):
     geocode_result = address_to_latlng(http, address)
     if geocode_result is None:
         return make_invalid_request_response("Invalid address")
+    if not seeCharity:
+        seeCharity = False
 
     lat, lng, postal_code = geocode_result
 
@@ -329,6 +335,7 @@ def update_user(http, auth_token, address):
             "lat": lat,
             "lng": lng,
         },
+        "charity": seeCharity
     })
 
     if result.status == 200:
@@ -834,13 +841,13 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
     })
     if result.status != 200:
         return make_internal_error_response()
+
     result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
     if result.status == 200:
+        data = result.json()
+        listings_list = []
+        listings = data.get("listings")
         try:
-            data = result.json()
-            listings_list = []
-            listings = data.get("listings")
-
             listings_list = [{
                 "sellerId": listing.get('seller_id'),
                 "listingId": listing.get('listing_id'),
@@ -886,6 +893,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
         except Exception as e:
             make_internal_error_response()
 
+        return make_ok_response(body={"listings": listings_list, "users": users_list})
     return make_internal_error_response()
 
 
