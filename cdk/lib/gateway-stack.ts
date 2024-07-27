@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import { Code, Function, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { PythonLayerVersion } from "@aws-cdk/aws-lambda-python-alpha";
@@ -65,7 +65,15 @@ export class GatewayStack extends Stack {
           "https://localhost:5173", // allow local dev if it's on https
         ],
         allowHeaders: ["content-type"],
-        allowMethods: [CorsHttpMethod.ANY],
+        allowMethods: [
+          CorsHttpMethod.GET,
+          CorsHttpMethod.PATCH,
+          CorsHttpMethod.PUT,
+          CorsHttpMethod.POST,
+          CorsHttpMethod.DELETE,
+          CorsHttpMethod.OPTIONS,
+          CorsHttpMethod.HEAD,
+        ],
         allowCredentials: true,
       },
       defaultDomainMapping: this.domain
@@ -85,6 +93,7 @@ export class GatewayStack extends Stack {
     this.route(HttpMethod.POST, "/verify_reset", "verify_reset");
 
     this.route(HttpMethod.POST, "/login", "login");
+    this.route(HttpMethod.GET, "/logout", "logout");
 
     // Listings
 
@@ -139,6 +148,7 @@ export class GatewayStack extends Stack {
       code: Code.fromAsset(`packaging/${handlerName}.zip`),
       handler: `${handlerName}.handler`,
       layers: [this.layer],
+      timeout: Duration.seconds(30),
       environment: {
         DATA_URL: process.env.DATA_URL ?? "",
         DATA_API_KEY: process.env.DATA_API_KEY ?? "",

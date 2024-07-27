@@ -12,5 +12,6 @@ def handler(event, context):
     title = body.get('title')
     price = body.get('price')
     address = body.get('location')
-    result = gateway.create_listing(http, auth_token, title, price, address)
+    charity = body.get('forCharity')
+    result = gateway.create_listing(http, auth_token, title, price, address, charity)
     return mould_response(result)

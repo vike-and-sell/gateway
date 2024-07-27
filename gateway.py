@@ -8,7 +8,9 @@ import jwt.exceptions
 import jwt.utils
 import urllib3
 import hashlib
+import bleach
 import smtplib
+from itertools import islice
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -23,7 +25,7 @@ def address_to_latlng(http, address):
     geocode_raw = http.request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                                .format(MAPS_API_KEY, address))
 
-    print(geocode_raw)
+    print(address)
     if geocode_raw.status == 200:
         geocode = geocode_raw.json()
         if len(geocode["results"]) == 0:
@@ -32,6 +34,8 @@ def address_to_latlng(http, address):
         lat = pos["lat"]
         lng = pos["lon"]
         address = geocode["results"][0]["address"]
+        print(geocode)
+        print(address)
         postal_code = address["postalCode"]
         return (lat, lng, postal_code)
 
@@ -160,6 +164,15 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
             else:
                 items_purchased = items_purchased.json()
 
+            items_listed = execute_data_get(http,
+                                            f"/get_listing_by_seller?userId={user_id}")
+            if items_listed.status != 200:
+                print("could not get items listed by user {}, status: {}".format(
+                    user_id, items_purchased.status))
+                items_listed = []
+            else:
+                items_listed = items_listed.json()
+
             response_body = {
                 "userId": user_id,
                 "username": username,
@@ -167,6 +180,7 @@ def get_user_by_id(http: urllib3.PoolManager, auth_token, user_id, includeCharit
                 "joiningDate": joining_date,
                 "itemsSold": items_sold,
                 "itemsPurchased": items_purchased,
+                "activeListings": items_listed,
             }
             if includeCharity:
                 response_body["seeCharity"] = charity
@@ -367,6 +381,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
             status = data["status"]
             listedAt = data["listedAt"]
             lastUpdatedAt = data["lastUpdatedAt"]
+            charity = data["charity"]
 
             return make_ok_response(body={
                 "sellerId": sellerId,
@@ -375,6 +390,7 @@ def get_listing_by_id(http: urllib3.PoolManager, auth_token, listing_id):
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": charity,
                 "listedAt": listedAt,
                 "lastUpdatedAt": lastUpdatedAt,
             })
@@ -407,6 +423,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -417,6 +434,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
@@ -433,12 +451,12 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     return make_internal_error_response()
 
 
-def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float, min_price: float, status: str, sort_by: str, is_descending: bool):
+def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float, min_price: float, status: str, sort_by: str, is_descending: bool, offset: int = 0):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
 
-    sort_by_validation = ["price", "created_on", "location"]
+    sort_by_validation = ["price", "created_on"]
     status_validation = ["AVAILABLE", "SOLD"]
 
     keywords = ""
@@ -480,13 +498,14 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
 
             listings_list = []
 
-            for listing in data:
+            for listing in islice(data, offset, offset + 30):
                 sellerId = listing["sellerId"]
                 listingId = listing["listingId"]
                 title = listing["title"]
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["listedAt"]
                 lastUpdatedAt = listing["lastUpdatedAt"]
 
@@ -497,6 +516,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": lastUpdatedAt
                 })
@@ -506,14 +526,16 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
-            make_internal_error_response()
+            print("unexpected exception in get sorted listing")
+            print(e)
+            return make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("Listing not found")
 
     return make_internal_error_response()
 
 
-def create_listing(http: urllib3.PoolManager, auth_token, title, price, address):
+def create_listing(http: urllib3.PoolManager, auth_token, title, price, address, charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -523,7 +545,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
         return make_invalid_request_response("Invalid address")
 
     lat, lng, postal_code = pos
-    result = execute_data_post(http, f"/create_listing", {
+    request_body = {
         "sellerId": creds,
         "title": title,
         "price": price,
@@ -531,7 +553,11 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
         "longitude": lng,
         "address": postal_code,
         "status": 'AVAILABLE',
-    })
+    }
+    if charity:
+        request_body['charity'] = charity
+
+    result = execute_data_post(http, f"/create_listing", request_body)
     if result.status == 201:
         try:
             data = result.json()
@@ -540,12 +566,14 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
             price = data["price"]
             address = data["address"]
             status = data["status"]
+            charity = data["charity"]
             return make_created_response(body={
                 "listingId": listingId,
                 "title": title,
                 "price": price,
                 "location": address,
                 "status": status,
+                "forCharity": charity
             })
 
         except json.decoder.JSONDecodeError:
@@ -557,7 +585,7 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address)
     return make_internal_error_response()
 
 
-def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username):
+def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, price, address, status, buyer_username, charity):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -575,7 +603,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
                 "buyerUsername": buyer_username
             })
         if result.status != 200:
-            make_invalid_request_response("Invalid buyerUsername")
+            return make_invalid_request_response("Invalid buyerUsername")
 
     lat = None
     lng = None
@@ -594,7 +622,8 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "address": postal_code,
             "latitude": lat,
             "longitude": lng,
-            "status": status
+            "status": status,
+            "charity": charity
         })
     if result.status == 200:
         return make_ok_response()
@@ -754,6 +783,8 @@ def write_message(http, auth_token, chat_id, content) -> int:
         if creds != seller and creds != buyer:
             return make_unauthorized_response()
 
+        content = bleach.clean(content)
+
         result = execute_data_post(http, f"/create_message", {
             "chatId": chat_id,
             "content": content,
@@ -770,10 +801,39 @@ def write_message(http, auth_token, chat_id, content) -> int:
     return make_internal_error_response()
 
 
-def get_search(http, auth_token, q):
+def get_search(http, auth_token, q, min_price, max_price, status, sort_by, descending):
+
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+
+    sort_by_validation = ["price", "created_on"]
+    status_validation = ["AVAILABLE", "SOLD"]
+
+    if max_price is not None:
+        try:
+            max_price = float(max_price)
+        except ValueError:
+            return make_invalid_request_response("Invalid max_price value")
+
+        if 99999999.0 < max_price or max_price < 0.0:
+            return make_invalid_request_response("Invalid max_price value")
+    if min_price is not None:
+        try:
+            min_price = float(min_price)
+        except ValueError:
+            return make_invalid_request_response("Invalid min_price value")
+
+        if 99999999.0 < min_price or min_price < 0.0:
+            return make_invalid_request_response("Invalid min_price value")
+        if max_price is not None and min_price > max_price:
+            return make_invalid_request_response("minPrice must be less than maxPrice")
+    if status is not None:
+        if status not in status_validation:
+            return make_invalid_request_response("Invalid status value")
+    if sort_by is not None:
+        if sort_by not in sort_by_validation:
+            return make_invalid_request_response("Invalid sort by value")
 
     result = execute_data_post(http, f"/create_search", {
         "userId": creds,
@@ -787,26 +847,51 @@ def get_search(http, auth_token, q):
         data = result.json()
         listings_list = []
         listings = data.get("listings")
+        try:
+            listings_list = [{
+                "sellerId": listing.get('seller_id'),
+                "listingId": listing.get('listing_id'),
+                "title": listing.get('title'),
+                "price": listing.get('price'),
+                "location": listing.get('location'),
+                "status": listing.get('status'),
+                "forCharity": listing.get('charity'),
+                "listedAt": listing.get('created_on'),
+            } for listing in listings]
+            users = data.get("users")
+            users_list = [{"userId": user.get('user_id'), "username": user.get(
+                'username')} for user in users]
 
-        listings_list = [{
-            "sellerId": listing.get('seller_id'),
-            "listingId": listing.get('listing_id'),
-            "title": listing.get('title'),
-            "price": listing.get('price'),
-            "location": listing.get('location'),
-            "status": listing.get('status'),
-            "listedAt": listing.get('created_on'),
-        } for listing in listings]
-        users = data.get("users")
-        users_list = [{"userId": user.get('user_id'), "username": user.get(
-            'username')} for user in users]
-        for user in users:
-            user_id = user["user_id"]
-            username = user["username"]
-            users_list.append({
-                "userId": user_id,
-                "username": username
-            })
+            if min_price:
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') > min_price]
+            if max_price:
+                listings_list = [
+                    listing for listing in listings_list if listing.get('price') < max_price]
+            if status:
+                listings_list = [
+                    listing for listing in listings_list if listing.get('status') == status]
+            if descending:
+                if sort_by == "price":
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=True)
+                if sort_by == "created_on":
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=True)
+            else:
+                if sort_by == "price":
+                    listings_list.sort(
+                        key=lambda x: x.get('price'), reverse=False)
+                if sort_by == "created_on":
+                    listings_list.sort(key=lambda x: x.get(
+                        'listedAt'), reverse=False)
+
+            return make_ok_response(body={"listings": listings_list, "users": users_list})
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            make_internal_error_response()
 
         return make_ok_response(body={"listings": listings_list, "users": users_list})
     return make_internal_error_response()
@@ -832,6 +917,7 @@ def get_recommendations(http, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
+                charity = listing["charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -841,6 +927,7 @@ def get_recommendations(http, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
+                    "forCharity": charity,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
@@ -1069,6 +1156,59 @@ def login(http, username, password):
 
     print("invalid password")
     return make_invalid_request_response()
+
+
+def get_charities(http: urllib3.PoolManager, auth_token):
+    print("getting charities")
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    result = execute_data_get(http, "/get_charities")
+    if result.status == 200:
+        try:
+            data = result.json()
+            charities_list = []
+
+            for charity in data:
+                charityId = charity["charity_id"]
+                name = charity["name"]
+                status = charity["status"]
+                fund = charity["fund"]
+                logoUrl = charity["logo_url"]
+                startDate = charity["start_date"]
+                endDate = charity["end_date"]
+                numListings = charity["num_listings"]
+
+                charities_list.append({
+                    "charityId": charityId,
+                    "name": name,
+                    "status": status,
+                    "fund": fund,
+                    "logoUrl": logoUrl,
+                    "startDate": startDate,
+                    "endDate": endDate,
+                    "numListings": numListings
+                })
+
+            return make_ok_response(body=charities_list)
+
+        except json.decoder.JSONDecodeError:
+            return make_not_found_response()
+        except Exception as e:
+            print(e)
+            make_internal_error_response()
+    elif result.status == 404:
+        return make_not_found_response("Charities not found")
+
+    return make_internal_error_response()
+
+
+def logout():
+    return make_ok_response(auth={
+        "jwt": "",
+        "exp": datetime.datetime.now(datetime.UTC)
+    })
 
 
 def not_implemented():

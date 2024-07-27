@@ -46,6 +46,12 @@ def login():
     return make_response(result)
 
 
+@auth_bp.get('/logout')
+def logout():
+    result = gateway.logout()
+    return make_response(result)
+
+
 @auth_bp.post('/request_reset')
 def request_reset():
     body = request.get_json()
