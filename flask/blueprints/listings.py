@@ -49,6 +49,7 @@ def get_listings():
     status = request.args.get('status')
     sort_by = request.args.get('sortBy')
     is_descending = request.args.get('isDescending')
+    offset = request.args.get('offset')
 
     if is_descending == "true":
         is_descending = True
@@ -59,8 +60,10 @@ def get_listings():
         min_price = float(min_price)
     if max_price:
         max_price = float(max_price)
+    if offset:
+        offset = int(offset)
     result = gateway.get_sorted_listings(http, auth_token,
-                                         max_price, min_price, status, sort_by, is_descending)
+                                         max_price, min_price, status, sort_by, is_descending, offset)
     return make_response(result)
 
 

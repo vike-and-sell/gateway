@@ -10,6 +10,7 @@ import urllib3
 import hashlib
 import bleach
 import smtplib
+from itertools import islice
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -443,7 +444,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     return make_internal_error_response()
 
 
-def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float, min_price: float, status: str, sort_by: str, is_descending: bool):
+def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float, min_price: float, status: str, sort_by: str, is_descending: bool, offset: int = 0):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
@@ -490,7 +491,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
 
             listings_list = []
 
-            for listing in data:
+            for listing in islice(data, offset, offset + 100):
                 sellerId = listing["sellerId"]
                 listingId = listing["listingId"]
                 title = listing["title"]
@@ -518,7 +519,9 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
         except json.decoder.JSONDecodeError:
             return make_not_found_response()
         except Exception as e:
-            make_internal_error_response()
+            print("unexpected exception in get sorted listing")
+            print(e)
+            return make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("Listing not found")
 
@@ -1146,6 +1149,7 @@ def login(http, username, password):
     print("invalid password")
     return make_invalid_request_response()
 
+
 def get_charities(http: urllib3.PoolManager, auth_token):
     print("getting charities")
     creds = resolve_credentials(auth_token)
@@ -1190,6 +1194,7 @@ def get_charities(http: urllib3.PoolManager, auth_token):
         return make_not_found_response("Charities not found")
 
     return make_internal_error_response()
+
 
 def logout():
     return make_ok_response(auth={

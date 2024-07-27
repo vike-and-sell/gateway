@@ -19,12 +19,18 @@ def handler(event, context):
             is_descending = True
         else:
             is_descending = False
+        offset = params.get("offset")
+        if offset is not None:
+            offset = int(offset)
+        else:
+            offset = 0
     else:
         max_price = None
         min_price = None
         status = None
         sort_by = None
         is_descending = None
+        offset = 0
     result = gateway.get_sorted_listings(
-        http, auth_token, max_price, min_price, status, sort_by, is_descending)
+        http, auth_token, max_price, min_price, status, sort_by, is_descending, offset)
     return mould_response(result)
