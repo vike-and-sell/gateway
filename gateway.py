@@ -540,7 +540,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
             print(e)
             return make_internal_error_response()
     elif result.status == 404:
-        return make_not_found_response("Listing not found")
+        return make_ok_response(body=[])
 
     return make_internal_error_response()
 

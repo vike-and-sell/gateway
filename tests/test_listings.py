@@ -386,10 +386,8 @@ def test_get_sorted_listings_fail():
         "uid": 5678
     })
     expected = {
-        "statusCode": 404,
-        "body": json.dumps({
-            "message": "Listing not found"
-        }),
+        "statusCode": 200,
+        "body": json.dumps([]),
     }
     actual = gateway.get_sorted_listings(
         http, token, max_price, min_price, status, sort_by, is_descending)
