@@ -459,6 +459,15 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
     sort_by_validation = ["price", "created_on"]
     status_validation = ["AVAILABLE", "SOLD"]
 
+    user_lookup_result = execute_data_get(http, f"/get_user?userId={creds}")
+    if user_lookup_result.status != 200:
+        return make_internal_error_response()
+
+    user_lookup = user_lookup_result.json()
+    loc = user_lookup["location"]
+    lat = loc["lat"]
+    lng = loc["lng"]
+
     keywords = ""
     if max_price is not None:
         try:
@@ -489,7 +498,8 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
             return make_invalid_request_response("Invalid sort by value")
         keywords += f"sortBy={sort_by}&"
 
-    keywords += f"isDescending={is_descending}"
+    keywords += f"isDescending={is_descending}&lat={lat}&lng={lng}"
+    print(keywords)
 
     result = execute_data_get(http, f"/get_listings?{keywords}")
     if result.status == 200:
