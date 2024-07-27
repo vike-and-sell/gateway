@@ -549,6 +549,9 @@ def create_listing(http: urllib3.PoolManager, auth_token, title, price, address,
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+    
+    if price < 0:
+        return make_invalid_request_response("Negative price")
 
     pos = address_to_latlng(http, address)
     if pos is None:
@@ -599,6 +602,9 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+
+    if price < 0:
+        return make_invalid_request_response("Negative price")
 
     if status and status not in ['AVAILABLE', 'SOLD', 'REMOVED']:
         return make_invalid_request_response("Status must be AVAILABLE, SOLD, or REMOVED")
