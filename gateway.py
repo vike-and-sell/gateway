@@ -615,14 +615,36 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     if not creds:
         return make_unauthorized_response()
 
-    if price and price < 0:
-        return make_invalid_request_response("Negative price")
+    listing_id = int(listing_id)
 
-    if status and status not in ['AVAILABLE', 'SOLD', 'REMOVED']:
-        return make_invalid_request_response("Status must be AVAILABLE, SOLD, or REMOVED")
+    if title is not None:
+        title = str(title)
 
-    if status == 'SOLD' and buyer_username is None:
+    if price is not None:
+        price = float(price)
+        if price < 0:
+            return make_invalid_request_response("Negative price")
+
+    if status is not None:
+        status = str(status)
+        if status not in ['AVAILABLE', 'SOLD', 'REMOVED']:
+            return make_invalid_request_response("Status must be AVAILABLE, SOLD, or REMOVED")
+
+    if buyer_username is not None:
+        buyer_username = str(buyer_username)
+
+    if status == 'SOLD' and (buyer_username is None or len(buyer_username) == 0):
         return make_invalid_request_response("Include buyerUsername if marking as sold")
+
+    lat = None
+    lng = None
+    postal_code = None
+    if address is not None:
+        address = str(address)
+        pos = address_to_latlng(http, address)
+        if pos is None:
+            return make_invalid_request_response("Invalid address")
+        lat, lng, postal_code = pos
 
     if status == 'SOLD' and buyer_username is not None:
         result = execute_data_post(
@@ -632,15 +654,6 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             })
         if result.status != 200:
             return make_invalid_request_response("Invalid buyerUsername")
-
-    lat = None
-    lng = None
-    postal_code = None
-    if address is not None:
-        pos = address_to_latlng(http, address)
-        if pos is None:
-            return make_invalid_request_response("Invalid address")
-        lat, lng, postal_code = pos
 
     result = execute_data_post(
         http, f"/update_listing", {
