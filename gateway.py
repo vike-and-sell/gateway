@@ -505,6 +505,10 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
             return make_invalid_request_response("Invalid sort by value")
         keywords += f"sortBy={sort_by}&"
 
+    if offset:
+        offset = int(offset)
+        keywords += f"offset={offset}&"
+
     keywords += f"isDescending={is_descending}&lat={lat}&lng={lng}"
     print(keywords)
 
@@ -516,7 +520,7 @@ def get_sorted_listings(http: urllib3.PoolManager, auth_token, max_price: float,
 
             listings_list = []
 
-            for listing in islice(data, offset, offset + 30):
+            for listing in data:
                 sellerId = listing["sellerId"]
                 listingId = listing["listingId"]
                 title = listing["title"]
