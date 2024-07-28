@@ -611,7 +611,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
     if not creds:
         return make_unauthorized_response()
 
-    if price < 0:
+    if price and price < 0:
         return make_invalid_request_response("Negative price")
 
     if status and status not in ['AVAILABLE', 'SOLD', 'REMOVED']:

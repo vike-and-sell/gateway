@@ -140,6 +140,9 @@ export class GatewayStack extends Stack {
 
     this.route(HttpMethod.GET, "/messages/{chatId}", "get_messages");
     this.route(HttpMethod.POST, "/messages/{chatId}", "create_message");
+
+    // Charity
+    this.route(HttpMethod.GET, "/charity", "get_charity");
   }
 
   handler(handlerName: string): HttpLambdaIntegration {
