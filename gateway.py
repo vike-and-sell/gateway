@@ -878,7 +878,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "sellerId": listing.get('seller_id'),
                 "listingId": listing.get('listing_id'),
                 "title": listing.get('title'),
-                "price"six: listing.get('price'),
+                "price": listing.get('price'),
                 "location": listing.get('location'),
                 "status": listing.get('status'),
                 "forCharity": listing.get('charity'),
