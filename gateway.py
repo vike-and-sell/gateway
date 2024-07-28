@@ -791,7 +791,7 @@ def get_chat_preview(http, auth_token, chat_id):
     elif chat_info.status == 404:
         return make_not_found_response("chatId not found")
 
-    # return make_internal_error_response()
+    return make_internal_error_response()
 
 
 def write_message(http, auth_token, chat_id, content) -> int:
@@ -878,7 +878,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "sellerId": listing.get('seller_id'),
                 "listingId": listing.get('listing_id'),
                 "title": listing.get('title'),
-                "price": listing.get('price'),
+                "price"six: listing.get('price'),
                 "location": listing.get('location'),
                 "status": listing.get('status'),
                 "forCharity": listing.get('charity'),
