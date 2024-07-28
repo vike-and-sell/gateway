@@ -776,18 +776,20 @@ def get_chat_preview(http, auth_token, chat_id):
         # only execute the second query if the first one succeeds to save processing power
         last_message_result = execute_data_get(
             http, f"/get_last_message_timestamp?chatId={chat_id}")
+        chat_json = chat_info.json()
+        users = [chat_json["seller"], chat_json["buyer"]]
+        listing_id = chat_json["listing_id"]
+        response_body = {
+            "users": users,
+            "listingId": listing_id,
+        }
         if last_message_result.status == 200:
-            chat_json = chat_info.json()
-            print(chat_json)
             last_message_json = last_message_result.json()
-            users = [chat_json["seller"], chat_json["buyer"]]
-            listing_id = chat_json["listing_id"]
-            last_message_time = last_message_json["timestamp"]
-            return make_ok_response({
-                "users": users,
-                "listingId": listing_id,
-                "lastMessageTime": last_message_time
-            })
+            last_message_time = last_message_json.get("timestamp")
+            response_body["lastMessageTime"] = last_message_time
+            return make_ok_response(response_body)
+        elif last_message_result.status == 404:
+            return make_ok_response(response_body)
         else:
             return make_internal_error_response()
     elif chat_info.status == 404:
