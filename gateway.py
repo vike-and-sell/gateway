@@ -646,6 +646,25 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             return make_invalid_request_response("Invalid address")
         lat, lng, postal_code = pos
 
+    lookup_result = execute_data_get(
+        http, f"/get_listing?listingId={listing_id}")
+    if lookup_result.status == 200:
+        try:
+            data = lookup_result.json()
+            sellerId = data["sellerId"]
+            existing_status = data["status"]
+
+            if sellerId != creds:
+                return make_unauthorized_response()
+
+            if existing_status == "SOLD":
+                # don't let a user update a listing that's already sold
+                return make_invalid_request_response()
+
+        except Exception as e:
+            print(e)
+            return make_internal_error_response()
+
     if status == 'SOLD' and buyer_username is not None:
         result = execute_data_post(
             http, f"/create_sale", {

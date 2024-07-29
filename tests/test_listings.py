@@ -142,6 +142,18 @@ def test_patch_listing_success():
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
 
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 5678,
+        "status": "AVAILABLE",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(lookup_result)
+
     response = mock({
         "status": 200,
     })
@@ -192,6 +204,18 @@ def test_patch_listing_fail():
     when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
                        .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
 
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 5678,
+        "status": "AVAILABLE",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(lookup_result)
+
     response = mock({
         "status": 400,
     })
@@ -215,6 +239,97 @@ def test_patch_listing_fail():
         "body": json.dumps({
             "message": "Invalid request"
         }),
+    }
+    actual = gateway.update_listing(
+        http, token, 1111, "", 10.00, address, "AVAILABLE", None, None)
+    assert expected == actual
+
+
+def test_patch_sold_listing():
+    http = mock(urllib3.PoolManager())
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 5678,
+        "status": "SOLD",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(lookup_result)
+
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 400,
+        "body": json.dumps({
+            "message": ""
+        }),
+    }
+    actual = gateway.update_listing(
+        http, token, 1111, "", 10.00, address, "AVAILABLE", None, None)
+    assert expected == actual
+
+
+def test_patch_other_sellers_listing():
+    http = mock(urllib3.PoolManager())
+    address = "500 Fort St, Victoria, BC V8W 1E5"
+
+    mockGeo = mock({
+        "status": 200,
+    })
+    when(mockGeo).json().thenReturn({
+        "results": [{
+            "position": {
+                "lat": 12.3456,
+                "lon": 78.9012
+            },
+            "address": {
+                "postalCode": "V8W"
+            }
+        }]
+    })
+    when(http).request("GET", "https://atlas.microsoft.com/search/address/json?&subscription-key={}&api-version=1.0&language=en-US&query={}"
+                       .format(gateway.MAPS_API_KEY, address)).thenReturn(mockGeo)
+
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 1234,  # different seller from the userId in token
+        "status": "AVAILABLE",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+        }).thenReturn(lookup_result)
+
+    token = sign_jwt_for_test({
+        "uid": 5678
+    })
+    expected = {
+        "statusCode": 401,
     }
     actual = gateway.update_listing(
         http, token, 1111, "", 10.00, address, "AVAILABLE", None, None)
