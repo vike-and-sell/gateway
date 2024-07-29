@@ -11,7 +11,7 @@ jobs:
     env:
       DATA_URL: ${{ vars.DATA_URL }}
       DATA_API_KEY: ${{ secrets.DL_API_KEY }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET_KEY }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
       SMTP_SERVER: ${{ vars.SMTP_SERVER }}
       SMTP_PORT: ${{ vars.SMTP_PORT }}
