@@ -904,7 +904,11 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
     if result.status != 200:
         return make_internal_error_response()
 
-    result = http.request("GET", f"{SEARCH_REC_URL}/search?q={q}")
+    headers = {
+        "X-Api-Key": DATA_API_KEY,
+    }
+    result = http.request(
+        "GET", f"{SEARCH_REC_URL}/search?q={q}", headers=headers)
     if result.status == 200:
         data = result.json()
         listings_list = []
@@ -915,7 +919,7 @@ def get_search(http, auth_token, q, min_price, max_price, status, sort_by, desce
                 "listingId": listing.get('listing_id'),
                 "title": listing.get('title'),
                 "price": listing.get('price'),
-                "location": listing.get('location'),
+                "location": listing.get('address'),
                 "status": listing.get('status'),
                 "forCharity": listing.get('charity'),
                 "listedAt": listing.get('created_on'),
@@ -964,9 +968,14 @@ def get_recommendations(http, auth_token):
     if not creds:
         return make_unauthorized_response()
 
+    print(creds)
+    headers = {
+        "X-Api-Key": DATA_API_KEY,  # search cluster uses dl api key for now
+    }
     result = http.request(
-        "GET", f"{SEARCH_REC_URL}/recommendations?userId={creds}")
+        "GET", f"{SEARCH_REC_URL}/recommendations?userId={creds}", headers=headers)
 
+    print(result.status)
     if result.status == 200:
         try:
             data = result.json()
@@ -979,7 +988,7 @@ def get_recommendations(http, auth_token):
                 price = listing["price"]
                 address = listing["address"]
                 status = listing["status"]
-                charity = listing["charity"]
+                # charity = listing["charity"]
                 listedAt = listing["created_on"]
 
                 listings_list.append({
@@ -989,20 +998,26 @@ def get_recommendations(http, auth_token):
                     "price": price,
                     "location": address,
                     "status": status,
-                    "forCharity": charity,
+                    # "forCharity": charity,
+                    "forCharity": False,
                     "listedAt": listedAt,
                     "lastUpdatedAt": listedAt,  # will be updated once alg returns last updated time
                 })
 
             return make_ok_response(body=listings_list)
 
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
+            print("json decode error")
+            print(e)
             return make_not_found_response()
         except Exception as e:
-            make_internal_error_response()
+            print("unknown exception")
+            print(e)
+            return make_internal_error_response()
     elif result.status == 404:
         return make_not_found_response("Listing not found")
 
+    print("reached end of function unexpectedly")
     return make_internal_error_response()
 
 
