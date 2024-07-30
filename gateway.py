@@ -665,16 +665,7 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             print(e)
             return make_internal_error_response()
 
-    if status == 'SOLD' and buyer_username is not None:
-        result = execute_data_post(
-            http, f"/create_sale", {
-                "listingId": listing_id,
-                "buyerUsername": buyer_username
-            })
-        if result.status != 200:
-            return make_invalid_request_response("Invalid buyerUsername")
-
-    result = execute_data_post(
+    update_result = execute_data_post(
         http, f"/update_listing", {
             "listingId": listing_id,
             "title": title,
@@ -685,10 +676,19 @@ def update_listing(http: urllib3.PoolManager, auth_token, listing_id, title, pri
             "status": status,
             "charity": charity
         })
-    if result.status == 200:
-        return make_ok_response()
-    elif result.status == 400:
+    if update_result.status == 400:
         return make_invalid_request_response("Invalid request")
+
+    if status == 'SOLD' and buyer_username is not None:
+        sale_result = execute_data_post(
+            http, f"/create_sale", {
+                "listingId": listing_id,
+                "buyerUsername": buyer_username
+            })
+        if sale_result.status != 200:
+            return make_invalid_request_response("Invalid buyerUsername")
+    if update_result.status == 200:
+        return make_ok_response()
     return make_internal_error_response()
 
 
