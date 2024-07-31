@@ -338,6 +338,17 @@ def test_patch_other_sellers_listing():
 
 def test_delete_listing_success():
     http = mock(urllib3.PoolManager())
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 5678,
+        "status": "AVAILABLE",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+    }).thenReturn(lookup_result)
     response = mock({
         "status": 200,
     })
@@ -359,6 +370,17 @@ def test_delete_listing_fail():
     response = mock({
         "status": 404,
     })
+    lookup_result = mock({
+        "status": 200,
+    })
+    when(lookup_result).json().thenReturn({
+        "sellerId": 5678,
+        "status": "AVAILABLE",
+    })
+    when(http).request(
+        "GET", f"{DATA_URL}/get_listing?listingId=1111", json=None, headers={
+            "X-Api-Key": DATA_API_KEY
+    }).thenReturn(lookup_result)
     when(http).request("DELETE", f"{DATA_URL}/delete_listing?listingId=1111", json=None, headers={
         "X-Api-Key": DATA_API_KEY,
     }).thenReturn(response)
