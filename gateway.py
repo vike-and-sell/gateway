@@ -697,6 +697,20 @@ def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
     if not creds:
         return make_unauthorized_response()
 
+    lookup_result = execute_data_get(
+        http, f"/get_listing?listingId={listing_id}")
+
+    if lookup_result.status == 200:
+        try:
+            data = lookup_result.json()
+            sellerId = data["sellerId"]
+
+            if sellerId != creds:
+                return make_unauthorized_response()
+
+        except Exception as e:
+            return make_internal_error_response()
+
     result = execute_data_delete(
         http, f"/delete_listing?listingId={listing_id}")
     if result.status == 200:
