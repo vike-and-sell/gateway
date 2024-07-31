@@ -1245,7 +1245,12 @@ def get_charities(http: urllib3.PoolManager, auth_token):
     if result.status == 200:
         try:
             data = result.json()
+            num_listings = execute_data_get(http, "/get_num_charity_listings")
             charities_list = []
+
+            if num_listings.status != 200:
+                make_internal_error_response()
+            num_listings = num_listings.json()
 
             for charity in data:
                 charityId = charity["charity_id"]
@@ -1255,7 +1260,7 @@ def get_charities(http: urllib3.PoolManager, auth_token):
                 logoUrl = charity["logo_url"]
                 startDate = charity["start_date"]
                 endDate = charity["end_date"]
-                numListings = charity["num_listings"]
+                numListings = num_listings['num_listings']
 
                 charities_list.append({
                     "charityId": charityId,
