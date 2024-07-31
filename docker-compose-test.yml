@@ -10,3 +10,4 @@ services:
       JWT_SECRET_KEY: testjwtsecret
       MAPS_API_KEY: testmapsapikey
       SEARCH_REC_URL: ${SEARCH_REC_URL}
+      CREATE_CHARITY_KEY: ${CREATE_CHARITY_KEY}

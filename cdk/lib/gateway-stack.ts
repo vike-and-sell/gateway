@@ -49,7 +49,7 @@ export class GatewayStack extends Stack {
           ),
         });
       }
-    } catch {}
+    } catch { }
 
     this.layer = new PythonLayerVersion(this, "PythonLayerFromRequirements", {
       layerVersionName: "gateway-python-layer",
@@ -78,8 +78,8 @@ export class GatewayStack extends Stack {
       },
       defaultDomainMapping: this.domain
         ? {
-            domainName: this.domain,
-          }
+          domainName: this.domain,
+        }
         : undefined,
     });
 
@@ -162,6 +162,7 @@ export class GatewayStack extends Stack {
         SMTP_USERNAME: process.env.SMTP_USERNAME ?? "",
         SMTP_PASSWORD: process.env.SMTP_PASSWORD ?? "",
         SEARCH_REC_URL: process.env.SEARCH_REC_URL ?? "",
+        CREATE_CHARITY_KEY: process.env.CREATE_CHARITY_KEY ?? "",
       },
     });
 

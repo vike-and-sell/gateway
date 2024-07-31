@@ -10,6 +10,7 @@ ENV DATA_URL=test
 ENV DATA_API_KEY=testapikey
 ENV JWT_SECRET_KEY=testjwtsecret
 ENV SEARCH_REC_URL=${SEARCH_REC_URL}
+ENV CREATE_CHARITY_KEY=${CREATE_CHARITY_KEY}
 
 RUN pip install -r requirements.txt
 

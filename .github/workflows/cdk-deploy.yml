@@ -18,6 +18,7 @@ jobs:
       SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       SEARCH_REC_URL: ${{ vars.SEARCH_REC_URL }}
+      CREATE_CHARITY_KEY: ${{ vars.CREATE_CHARITY_KEY }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3

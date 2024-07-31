@@ -19,6 +19,7 @@ DATA_API_KEY = os.environ["DATA_API_KEY"]
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 MAPS_API_KEY = os.environ["MAPS_API_KEY"]
 SEARCH_REC_URL = os.environ["SEARCH_REC_URL"]
+CREATE_CHARITY_KEY = os.environ["CREATE_CHARITY_KEY"]
 
 
 def address_to_latlng(http, address):
@@ -1280,6 +1281,27 @@ def get_charities(http: urllib3.PoolManager, auth_token):
 
     return make_internal_error_response()
 
+def add_charity(http: urllib3.PoolManager, auth_token, key, name, status, logo_url, start_date, end_date):
+    creds = resolve_credentials(auth_token)
+    if not creds:
+        return make_unauthorized_response()
+
+    if key != str(CREATE_CHARITY_KEY):
+        return make_unauthorized_response()
+    
+    result = execute_data_post(http, f"/add_charity", {
+        "name": name,
+        "status": status,
+        "logo_url": logo_url,
+        "start_date": start_date,
+        "end_date": end_date
+    })
+    if result.status == 201:
+        return make_ok_response(f"Charity created {result.json()}")
+    print("ruh roh")
+    print(result.status)
+    return make_internal_error_response()
+    
 
 def logout():
     return make_ok_response(auth={
