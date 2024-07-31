@@ -420,6 +420,8 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     if result.status == 200:
         try:
             data = result.json()
+            if type(data) is not list:
+                data = [data]
 
             listings_list = []
 
@@ -449,7 +451,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
             return make_ok_response(body=listings_list)
 
         except json.decoder.JSONDecodeError:
-            return make_not_found_response()
+            return make_ok_response(body=[])
         except Exception as e:
             make_internal_error_response()
     elif result.status == 404:
