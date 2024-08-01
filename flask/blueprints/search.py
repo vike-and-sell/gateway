@@ -10,7 +10,7 @@ search_bp = Blueprint('search', __name__)
 
 @search_bp.get('/')
 def get_search():
-    q = request.args.get("q")
+    q = request.args.get("search")
     auth = request.cookies.get("Authorization")
     max_price = request.args.get('maxPrice')
     min_price = request.args.get('minPrice')

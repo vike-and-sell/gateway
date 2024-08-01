@@ -9,7 +9,7 @@ http = urllib3.PoolManager()
 def handler(event, context):
     auth_token = get_auth_token(event)
     params = get_query_params(event)
-    query = params.get('q')
+    query = params.get('search')
     max_price = params.get('maxPrice')
     min_price = params.get('minPrice')
     status = params.get('status')

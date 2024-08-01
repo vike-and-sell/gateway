@@ -421,6 +421,8 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
     if result.status == 200:
         try:
             data = result.json()
+            if type(data) is not list:
+                data = [data]
 
             listings_list = []
 
@@ -450,7 +452,7 @@ def get_my_listings(http: urllib3.PoolManager, auth_token):
             return make_ok_response(body=listings_list)
 
         except json.decoder.JSONDecodeError:
-            return make_not_found_response()
+            return make_ok_response(body=[])
         except Exception as e:
             make_internal_error_response()
     elif result.status == 404:
@@ -697,6 +699,20 @@ def delete_listing(http: urllib3.PoolManager, auth_token, listing_id):
     creds = resolve_credentials(auth_token)
     if not creds:
         return make_unauthorized_response()
+
+    lookup_result = execute_data_get(
+        http, f"/get_listing?listingId={listing_id}")
+
+    if lookup_result.status == 200:
+        try:
+            data = lookup_result.json()
+            sellerId = data["sellerId"]
+
+            if sellerId != creds:
+                return make_unauthorized_response()
+
+        except Exception as e:
+            return make_internal_error_response()
 
     result = execute_data_delete(
         http, f"/delete_listing?listingId={listing_id}")
